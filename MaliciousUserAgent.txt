@@ -89,3 +89,4 @@ WPScan
 xmlrpc exploit
 XSpider
 zmeu
+powershell
