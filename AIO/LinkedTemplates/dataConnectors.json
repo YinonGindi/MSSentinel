@@ -53,6 +53,66 @@
         "tiName": "[concat('ti', uniqueString(resourceGroup().id))]"
     },
     "resources": [
+         {
+            "condition": "[contains(parameters('dataConnectorsKind'), 'AzureActiveDirectory')]",
+            "type": "microsoft.aadiam/diagnosticSettings",
+            "apiVersion": "2017-04-01",
+            "scope": "/",
+            "name": "[format('{0}-aadDiagnosticSetttings', parameters('workspaceName'))]",
+            "properties": {
+            "logs": [
+                {
+                    "category": "SignInLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'SignInLogs')]"
+                },
+                {
+                    "category": "AuditLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'AuditLogs')]"
+                },
+                {
+                    "category": "NonInteractiveUserSignInLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'NonInteractiveUserSignInLogs')]"
+                },
+                {
+                    "category": "ServicePrincipalSignInLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'ServicePrincipalSignInLogs')]"
+                },
+                {
+                    "category": "ManagedIdentitySignInLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'ManagedIdentitySignInLogs')]"
+                },
+                {
+                    "category": "ProvisioningLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'ProvisioningLogs')]"
+                },
+                {
+                    "category": "ADFSSignInLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'ADFSSignInLogs')]"
+                },
+                {
+                    "category": "UserRiskEvents",
+                    "enabled": "[contains(parameters('aadStreams'),'UserRiskEvents')]"
+                },
+                {
+                    "category": "RiskyUsers",
+                    "enabled": "[contains(parameters('aadStreams'),'RiskyUsers')]"
+                },
+                {
+                    "category": "NetworkAccessTrafficLogs",
+                    "enabled": "[contains(parameters('aadStreams'),'NetworkAccessTrafficLogs')]"
+                },
+                {
+                    "category": "RiskyServicePrincipals",
+                    "enabled": "[contains(parameters('aadStreams'),'RiskyServicePrincipals')]"
+                },
+                {
+                    "category": "ServicePrincipalRiskEvents",
+                    "enabled": "[contains(parameters('aadStreams'),'ServicePrincipalRiskEvents')]"
+                }
+            ],
+            "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+            }
+        },
         {
             "condition": "[contains(parameters('dataConnectorsKind'), 'Office365')]",
             "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
