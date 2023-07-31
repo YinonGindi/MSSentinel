@@ -23,7 +23,7 @@
                 "label": "Resource Group name",
                 "placeholder": "RG_<CustomerName>_Sentinel",
                 "defaultValue": "",
-                "toolTip": "Enter a resource group name",
+                "toolTip": "Enter a resource group name. EG: RG_<CustomerName>_Sentinel",
                 "constraints": {
                     "required": true,
                     "regex": "^[A-Za-z0-9][A-Za-z0-9-]+[A-Za-z0-9]$",
@@ -36,7 +36,7 @@
                 "type": "Microsoft.Common.TextBox",
                 "label": "Workspace Name",
                 "placeholder": "",
-                "defaultValue": "LA-<CustomerName>-Sentinel",
+                "defaultValue": "LA-CustomerName-Sentinel",
                 "toolTip": "The Workspace name should include 4-63 letters, digits or '-'. The '-' shouldn't be the first or the last symbol.",
                 "constraints": {
                     "required": true,
