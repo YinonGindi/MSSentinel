@@ -110,7 +110,7 @@
             "metadata": {
                 "description": "Enable Scheduled analytics rules"
             },
-            "defaultValue": false
+            "defaultValue": true
         },
         "_artifactsLocation": {
             "type": "string",
