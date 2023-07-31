@@ -143,13 +143,6 @@
             },
             "defaultValue": false
         },
-        "enableSolutions1P": {
-            "type": "array",
-            "metadata": {
-                "description": "The list of Content Hub 1st party solutions to deploy."
-            },
-            "defaultValue": []
-        },
         "enableSolutionsEssentials": {
             "type": "array",
             "metadata": {
@@ -288,7 +281,7 @@
             }
         },
         {
-            "condition": "[or(not(empty(parameters('enableSolutions1P'))),not(empty(parameters('enableSolutionsEssentials'))))]",
+            "condition": "[not(empty(parameters('enableSolutionsEssentials'))))]",
             "name": "enableSolutionsAndAlerts",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -304,9 +297,6 @@
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
-                    "enableSolutions1P": {
-                        "value": "[replace(replace(string(parameters('enableSolutions1P')),'[',''),']','')]"
-                    },
                     "enableSolutionsEssentials": {
                         "value": "[replace(replace(string(parameters('enableSolutionsEssentials')),'[',''),']','')]"
                     },
