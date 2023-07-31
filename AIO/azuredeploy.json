@@ -117,7 +117,7 @@
             "metadata": {
                 "description": "The location of resources"
             },
-            "defaultValue": "https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Tools/Sentinel-All-In-One/"
+            "defaultValue": "https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/AIO"
         }
     },
     "variables": {
@@ -141,7 +141,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'v2/LinkedTemplates/workspace.json')]",
+                    "uri": "[uri(parameters('_artifactsLocation'), 'LinkedTemplates/workspace.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -180,7 +180,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'v2/LinkedTemplates/settings.json')]",
+                    "uri": "[uri(parameters('_artifactsLocation'), 'LinkedTemplates/settings.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -203,7 +203,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'v2/LinkedTemplates/dataConnectors.json')]",
+                    "uri": "[uri(parameters('_artifactsLocation'), 'LinkedTemplates/dataConnectors.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -241,7 +241,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'v2/LinkedTemplates/solutionsAndAlerts.json')]",
+                    "uri": "[uri(parameters('_artifactsLocation'), 'LinkedTemplates/solutionsAndAlerts.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
