@@ -65,7 +65,7 @@
                 "label": "Number of days of retention",
                 "placeholder": "",
                 "defaultValue": "90",
-                "toolTip": "Only numbers allowed",
+                "toolTip": "Only numbers allowed. 90 days are free with Sentinel",
                 "constraints": {
                     "required": true,
                     "regex": "([3-8][0-9]|9[0-9]|[1-6][0-9]{2}|7[0-2][0-9]|730)",
@@ -285,6 +285,7 @@
                       "filter": true,
                       "filterPlaceholder": "Filter items ...",
                       "multiLine": true,
+                      "defaultValue": [{"value": "AzureActiveDirectoryIDP"}, {"value": "AzureActivity"}, {"value": "Microsoft365Defender"}, {"value": "MicrosoftDefenderForCloud"}, {"value": "OfficeIRM"}, {"value": "Office365"}],
                       "defaultDescription": "A value for selection",
                       "toolTip": "Select the data connectors that you would like to enable",
                       "constraints": {
@@ -335,7 +336,7 @@
                       "label": "Select Azure Active Directory log types to enable",
                       "placeholder": "",
                       "multiselect": true,
-                      "defaultValue": [{"value": "SignInLogs"}, {"value": "AuditLogs"}],
+                      "defaultValue": [{"value": "SignInLogs"}, {"value": "AuditLogs"}, {"value": "ServicePrincipalSignInLogs"}],
                       "toolTip": "Select Azure Active Directory log types you would like to stream to the workspace",
                       "constraints": {
                           "allowedValues": [
