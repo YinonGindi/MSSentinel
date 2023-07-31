@@ -21,8 +21,8 @@
                 "name": "rgName",
                 "type": "Microsoft.Common.TextBox",
                 "label": "Resource Group name",
-                "placeholder": "",
-                "defaultValue": "RG_<CustomerName>_Sentinel",
+                "placeholder": "RG_<CustomerName>_Sentinel",
+                "defaultValue": "",
                 "toolTip": "Enter a resource group name",
                 "constraints": {
                     "required": true,
