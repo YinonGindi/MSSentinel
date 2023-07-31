@@ -343,7 +343,6 @@
             "dataRetention": "[basics('dataRetention')]",
             "pricingTier": "[basics('pricingTier')]",
             "capacityReservation": "[basics('capacityReservation')]",
-            "enableSolutionsEssentials": "[steps('solutions').enableSolutionsEssentials]",
             "enableDataConnectors": "[steps('dataConnectors').enableDataConnectors]",
             "aadStreams": "[steps('dataConnectors').aadStreams]",
             "location": "[location()]",
