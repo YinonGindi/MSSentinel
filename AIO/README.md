@@ -1,4 +1,4 @@
-# Microsoft Sentinel All In One - Basic Tier
+# Microsoft Sentinel All In One - Free Tier
 
 <p align="center">
 <img src="./Media/Sentinel All-in-One logo.jpg?raw=true">
@@ -21,7 +21,6 @@ Microsoft Sentinel All-in-One automates the following tasks:
     + Azure Activity (from current subscription)
     + Microsoft 365 Defender (Microsoft Defender for Endpoint, Microsoft Defender for Identity, Microsoft Defender for Office, Microsoft Defender for Cloud Apps)
     + Microsoft Defender for Cloud (Azure Security Center)
-    + Microsoft Defender for IoT
     + Microsoft Entra ID Identity Protection (Azure Active Directory Identity Protection)
     + Microsoft Insider Risk Management
     + Office 365
