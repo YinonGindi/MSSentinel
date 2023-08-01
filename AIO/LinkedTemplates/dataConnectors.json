@@ -46,7 +46,6 @@
     "variables": {
         "o365Name": "[concat('o365', uniqueString(resourceGroup().id))]",
         "m365dName": "[concat('m365d', uniqueString(resourceGroup().id))]",
-        "iotName": "[concat('iot', uniqueString(resourceGroup().id))]",
         "irmName": "[concat('irm', uniqueString(resourceGroup().id))]",
         "ascName": "[concat('asc', uniqueString(resourceGroup().id))]",
         "aadipName": "[concat('aadip', uniqueString(resourceGroup().id))]"
@@ -188,22 +187,6 @@
                 "tenantId": "[parameters('tenantId')]",
                 "dataTypes": {
                     "incidents": {
-                        "state": "enabled"
-                    }
-                }
-            }
-        },
-        {
-            "condition": "[contains(parameters('dataConnectorsKind'), 'IOT')]",
-            "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
-            "apiVersion": "2022-12-01-preview",
-            "location": "[parameters('location')]",
-            "name": "[concat(parameters('workspaceName'),'/Microsoft.SecurityInsights/',variables('iotName'))]",
-            "kind": "IOT",
-            "properties": {
-                "subscriptionId": "[parameters('subscriptionId')]",
-                "dataTypes": {
-                    "alerts": {
                         "state": "enabled"
                     }
                 }
