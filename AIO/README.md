@@ -44,7 +44,6 @@ The following table summarizes permissions, licenses and permissions needed and 
 
 | Data Connector                                 | License         |  Permissions                    | Cost      |
 | ---------------------------------------------- | --------------- |---------------------------------|-----------|
-| Azure Active Directory (Tenant scope version only) | Any AAD license | Global Admin or Security Admin  | Billed    |
 | Azure Active Directory Identity Protection  | AAD Premium 2   | Global Admin or Security Admin  | Free      |
 | Azure Activity                                 | None            | Subscription Reader             | Free      |
 | Microsoft 365 Defender                         | M365D license   | Global Admin or Security Admin  | Free      |
