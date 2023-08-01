@@ -27,7 +27,7 @@
                 "constraints": {
                     "required": true,
                     "regex": "^RG-[A-Za-z][A-Za-z-]+[A-Za-z]-Sentinel$",
-                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                    "validationMessage": "Only alphanumeric characters are allowed, the text should look like: RG-<CustomerName>-Sentinel and the value must be 1-30 characters long."
                 },
                 "visible": true  
             },
@@ -41,7 +41,7 @@
                 "constraints": {
                     "required": true,
                     "regex": "^LA-[A-Za-z][A-Za-z-]+[A-Za-z]-Sentinel$",
-                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                    "validationMessage": "Only alphanumeric characters are allowed, the text should look like: LA-<CustomerName>-Sentinel and the value must be 1-30 characters long."
                 },
                 "visible": true
             },
