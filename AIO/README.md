@@ -18,7 +18,6 @@ Microsoft Sentinel All-in-One automates the following tasks:
 - Installs Microsoft Sentinel on top of the workspace
 - Sets workspace retention, daily cap and commitment tiers if desired
 - Enables Free Data Connectors from this list:
-    + Microsoft Entra ID (Azure Active Directory)*
     + Azure Activity (from current subscription)
     + Microsoft 365 Defender (Microsoft Defender for Endpoint, Microsoft Defender for Identity, Microsoft Defender for Office, Microsoft Defender for Cloud Apps)
     + Microsoft Defender for Cloud (Azure Security Center)
@@ -28,11 +27,6 @@ Microsoft Sentinel All-in-One automates the following tasks:
     + Office 365
 - Enables analytics rules (Scheduled and NRT) that use any of the selected Data connectors, with the ability to filter by severity
 
-*Microsoft 365 E5, A5, F5 and G5 and Microsoft 365 E5, A5, F5 and G5 Security customers can receive a data grant of up to 5MB per user/day to ingest Microsoft 365 data.
-The data sources included in this offer include:
-   + Azure Active Directory (Azure AD) sign-in and audit logs
-   + Microsoft Information Protection logs
-   + Microsoft 365 advanced hunting data
 
 ## Prerequisites
 
