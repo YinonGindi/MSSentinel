@@ -262,6 +262,12 @@
                     "workspaceName": {
                         "value": "[parameters('workspaceName')]"
                     },
+                    "severityLevels": {
+                        "value": "[replace(replace(string(parameters('severityLevels')),'[',''),']','')]"
+                    },
+                    "enableAlerts": {
+                        "value": "[parameters('enableScheduledAlerts')]"
+                    },
                     "tenantId": {
                         "value": "[subscription().tenantId]"
                     },
