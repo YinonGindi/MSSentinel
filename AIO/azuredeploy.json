@@ -166,6 +166,8 @@
         }
     },
     "variables": {
+        "mspRegistrationName": "[guid(parameters('mspOfferName'))]",
+        "mspAssignmentName": "[guid(parameters('mspOfferName'))]"
     },
     "resources": [
         {
