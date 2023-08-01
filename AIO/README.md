@@ -56,7 +56,6 @@ The following table summarizes permissions, licenses and permissions needed and 
 | Azure Activity                                 | None            | Subscription Reader             | Free      |
 | Microsoft 365 Defender                         | M365D license   | Global Admin or Security Admin  | Free      |
 | Microsoft Defender for Cloud                   | MDC license     | Security Reader                 | Free      |
-| Microsoft Defender for IoT                     | M4IOT license   | Security Reader                 | Free      |
 | Microsoft Insider Risk Management              | IRM license     | Global Admin or Security Admin  | Free      |
 | Office 365                                     | None            | Global Admin or Security Admin  | Free      |
 
