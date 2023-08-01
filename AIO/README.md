@@ -41,9 +41,9 @@ The data sources included in this offer include:
 - Some data connectors require the relevant licence in order to be enabled. See table at the end of this page for details.
 
 ## Try it now!
-
+<p align="center">
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FAIO%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FAIO%2FcreateUiDefinition.json) 
- 
+</p> 
 
 ## Supported connectors
 
