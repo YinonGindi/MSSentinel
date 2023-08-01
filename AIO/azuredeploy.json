@@ -242,8 +242,7 @@
             "apiVersion": "2020-06-01",
             "resourceGroup": "[parameters('rgName')]",
             "dependsOn": [
-                "workspaceCreation",
-                "enableSolutionsAndAlerts"
+                "workspaceCreation"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -266,37 +265,6 @@
                     },
                     "subscriptionId": {
                         "value": "[subscription().subscriptionId]"
-                    },
-                    "location": {
-                        "value": "[parameters('location')]"
-                    }
-                }
-            }
-        },
-        {
-            "name": "enableSolutionsAndAlerts",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-06-01",
-            "resourceGroup": "[parameters('rgName')]",
-            "dependsOn": [
-                "workspaceCreation",
-                "[resourceId('Microsoft.Resources/resourceGroups',parameters('rgName'))]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'AIO/LinkedTemplates/solutionsAndAlerts.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "workspaceName": {
-                        "value": "[parameters('workspaceName')]"
-                    },
-                    "severityLevels": {
-                        "value": "[replace(replace(string(parameters('severityLevels')),'[',''),']','')]"
-                    },
-                    "enableAlerts": {
-                        "value": "[parameters('enableScheduledAlerts')]"
                     },
                     "location": {
                         "value": "[parameters('location')]"
