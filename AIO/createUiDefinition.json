@@ -10,7 +10,7 @@
                 "location": {
                     "label": "Location",
                     "toolTip": "Region location for all resources",
-                    "defaultValue": "westeurope"
+                    "defaultValue": "westeurope",
                     "resourceTypes": [
                         "Microsoft.OperationalInsights/workspaces"
                     ]
