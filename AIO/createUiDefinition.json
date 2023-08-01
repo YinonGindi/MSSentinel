@@ -9,7 +9,7 @@
                 "description": "**Microsoft Sentinel All-In-One** deployment, see more information about this project [here](https://github.com/YinonGindi/MSSentinel/tree/main/AIO).",
                 "location": {
                     "label": "Location",
-                    "toolTip": "Location for all resources",
+                    "toolTip": "Region location for all resources",
                     "defaultValue": "westeurope"
                     "resourceTypes": [
                         "Microsoft.OperationalInsights/workspaces"
