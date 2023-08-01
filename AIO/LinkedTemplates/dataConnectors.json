@@ -49,8 +49,7 @@
         "iotName": "[concat('iot', uniqueString(resourceGroup().id))]",
         "irmName": "[concat('irm', uniqueString(resourceGroup().id))]",
         "ascName": "[concat('asc', uniqueString(resourceGroup().id))]",
-        "aadipName": "[concat('aadip', uniqueString(resourceGroup().id))]",
-        "tiName": "[concat('ti', uniqueString(resourceGroup().id))]"
+        "aadipName": "[concat('aadip', uniqueString(resourceGroup().id))]"
     },
     "resources": [
          {
