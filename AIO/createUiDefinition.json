@@ -168,7 +168,7 @@
                       "filter": true,
                       "filterPlaceholder": "Filter items ...",
                       "multiLine": true,
-                      "defaultValue": [{"value": "AzureActiveDirectoryIDP"}, {"value": "AzureActivity"}, {"value": "Microsoft365Defender"}, {"value": "MicrosoftDefenderForCloud"}, {"value": "OfficeIRM"}, {"value": "Office365"}],
+                      "defaultValue": [{"value": "AzureActiveDirectoryIDP"}, {"value": "AzureActivity"}, {"value": "Microsoft365Defender"}, {"value": "OfficeIRM"}, {"value": "Office365"}],
                       "defaultDescription": "A value for selection",
                       "toolTip": "Select the data connectors that you would like to enable",
                       "constraints": {
@@ -219,7 +219,7 @@
                       "label": "Select Azure Active Directory log types to enable",
                       "placeholder": "",
                       "multiselect": true,
-                      "defaultValue": [{"value": "SignInLogs"}, {"value": "AuditLogs"}, {"value": "ServicePrincipalSignInLogs"}],
+                      "defaultValue": [{"value": "SignInLogs"}, {"value": "AuditLogs"}],
                       "toolTip": "Select Azure Active Directory log types you would like to stream to the workspace",
                       "constraints": {
                           "allowedValues": [
@@ -295,6 +295,7 @@
                   {
                       "name": "enableScheduledAlerts",
                       "type": "Microsoft.Common.CheckBox",
+                      "defaultValue": true,
                       "label": "Enable Scheduled alert rules for selected Content Hub solutions and Data Connectors?",
                       "toolTip": "Select to enable Scheduled and NRT analytics rules for the solutions and connectors selected in the previous tabs",
                       "constraints": {
