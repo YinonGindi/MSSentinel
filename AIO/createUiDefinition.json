@@ -168,7 +168,7 @@
                       "filter": true,
                       "filterPlaceholder": "Filter items ...",
                       "multiLine": true,
-                      "defaultValue": [{"value": "AzureActiveDirectoryIDP"}, {"value": "AzureActivity"}, {"value": "Microsoft365Defender"}, {"value": "OfficeIRM"}, {"value": "Office365"}],
+                      "defaultValue": [{"value": "AzureActiveDirectoryIDP"}, {"value": "AzureActivity"}, {"value": "Microsoft365Defender"}, {"value": "OfficeIRM"}, {"value": "Office365"}, {"value": "MicrosoftDefenderForCloud"}],
                       "defaultDescription": "A value for selection",
                       "toolTip": "Select the data connectors that you would like to enable",
                       "constraints": {
