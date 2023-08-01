@@ -1,4 +1,4 @@
-# Microsoft Sentinel All In One - Free Tier
+# Microsoft Sentinel All In One - Basic Tier
 
 <p align="center">
 <img src="./Media/Sentinel All-in-One logo.jpg?raw=true">
@@ -12,20 +12,27 @@ Microsoft Sentinel All-in-One is aimed at helping customers and partners quickly
 Microsoft Sentinel All-in-One automates the following tasks:
 
 - Creates resource group
+- Creates the **Azure Lighthouse** registration definition
+- Creates the **Azure Lighthouse** registration assignments for BDOMDR to the resource group that will contain the Azure Sentinel resources
 - Creates Log Analytics workspace
 - Installs Microsoft Sentinel on top of the workspace
 - Sets workspace retention, daily cap and commitment tiers if desired
-- Installs Content Hub solutions from a predefined list in two categories: 1st party, Essentials
 - Enables Free Data Connectors from this list:
-    + Azure Active Directory Identity Protection
+    + Microsoft Entra ID (Azure Active Directory)*
     + Azure Activity (from current subscription)
     + Microsoft 365 Defender (Microsoft Defender for Endpoint, Microsoft Defender for Identity, Microsoft Defender for Office, Microsoft Defender for Cloud Apps)
-    + Microsoft Defender for Cloud
+    + Microsoft Defender for Cloud (Azure Security Center)
     + Microsoft Defender for IoT
+    + Microsoft Entra ID Identity Protection (Azure Active Directory Identity Protection)
     + Microsoft Insider Risk Management
     + Office 365
-- Enables analytics rules (Scheduled and NRT) included in the selected Content Hub solutions, with the ability to filter by severity
 - Enables analytics rules (Scheduled and NRT) that use any of the selected Data connectors, with the ability to filter by severity
+
+*Microsoft 365 E5, A5, F5 and G5 and Microsoft 365 E5, A5, F5 and G5 Security customers can receive a data grant of up to 5MB per user/day to ingest Microsoft 365 data.
+The data sources included in this offer include:
+   + Azure Active Directory (Azure AD) sign-in and audit logs
+   + Microsoft Information Protection logs
+   + Microsoft 365 advanced hunting data
 
 ## Prerequisites
 
@@ -44,6 +51,7 @@ The following table summarizes permissions, licenses and permissions needed and 
 
 | Data Connector                                 | License         |  Permissions                    | Cost      |
 | ---------------------------------------------- | --------------- |---------------------------------|-----------|
+| Azure Active Directory (Tenant scope version only) | Any AAD license | Global Admin or Security Admin  | Billed    |
 | Azure Active Directory Identity Protection  | AAD Premium 2   | Global Admin or Security Admin  | Free      |
 | Azure Activity                                 | None            | Subscription Reader             | Free      |
 | Microsoft 365 Defender                         | M365D license   | Global Admin or Security Admin  | Free      |
@@ -51,3 +59,8 @@ The following table summarizes permissions, licenses and permissions needed and 
 | Microsoft Defender for IoT                     | M4IOT license   | Security Reader                 | Free      |
 | Microsoft Insider Risk Management              | IRM license     | Global Admin or Security Admin  | Free      |
 | Office 365                                     | None            | Global Admin or Security Admin  | Free      |
+
+
+
+
+This repository was created based on <a href="https://github.com/Azure/Azure-Sentinel/tree/master/Tools/Sentinel-All-In-One">MS Sentinel AIO</a>
