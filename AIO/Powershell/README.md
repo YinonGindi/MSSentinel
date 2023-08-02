@@ -25,6 +25,7 @@ Microsoft Sentinel All-in-One automates the following tasks:
 - Azure Subscription
 - Azure user account with enough permissions to enable the desired connectors. See table at the end of this page for additional permissions. Write permissions to the workspace are **always** needed.
 - Some data connectors require the relevant licence in order to be enabled. See table at the end of this page for details.
+- Config files located on this repository: connectors.json, rgDelegatedResourceManagement.json, rgDelegatedResourceManagement.parameters.json
 
 
 ## Supported connectors
