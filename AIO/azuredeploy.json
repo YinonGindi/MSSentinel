@@ -246,12 +246,6 @@
             "dependsOn": [
                 "workspaceCreation"
             ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'AIO/LinkedTemplates/dataConnectors.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
                 "parameters": {
                     "dataConnectorsKind": {
                         "value": "[parameters('enableDataConnectors')]"
@@ -261,12 +255,6 @@
                     },
                     "workspaceName": {
                         "value": "[parameters('workspaceName')]"
-                    },
-                    "severityLevels": {
-                        "value": "[replace(replace(string(parameters('severityLevels')),'[',''),']','')]"
-                    },
-                    "enableAlerts": {
-                        "value": "[parameters('enableScheduledAlerts')]"
                     },
                     "tenantId": {
                         "value": "[subscription().tenantId]"
