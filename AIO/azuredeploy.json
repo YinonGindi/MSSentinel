@@ -266,7 +266,6 @@
                         "value": "[parameters('location')]"
                     }
                 }
-            }
         },
         {
             "type": "Microsoft.ManagedServices/registrationDefinitions",
