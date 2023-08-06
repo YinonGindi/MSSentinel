@@ -411,7 +411,6 @@
             "pricingTier": "[basics('pricingTier')]",
             "capacityReservation": "[basics('capacityReservation')]",
             "enableDataConnectors": "[steps('dataConnectors').enableDataConnectors]",
-            "aadStreams": "[steps('dataConnectors').aadStreams]",
             "location": "[location()]",
             "enableScheduledAlerts": "[steps('analyticsRules').enableScheduledAlerts]",
             "severityLevels": "[steps('analyticsRules').severityLevels]",
