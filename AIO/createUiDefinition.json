@@ -278,69 +278,6 @@
                           "required": true
                       },
                       "visible": true
-                  },
-                  {
-                    "name": "aadStreams",
-                      "type": "Microsoft.Common.DropDown",
-                      "label": "Select Azure Active Directory log types to enable",
-                      "placeholder": "",
-                      "multiselect": true,
-                      "defaultValue": [{"value": "SignInLogs"}, {"value": "AuditLogs"}],
-                      "toolTip": "Select Azure Active Directory log types you would like to stream to the workspace",
-                      "constraints": {
-                          "allowedValues": [
-                              {
-                                  "label": "Signin Logs",
-                                  "value": "SignInLogs"
-                              },
-                              {
-                                  "label": "Audit Logs",
-                                  "value": "AuditLogs"
-                              },
-                              {
-                                  "label": "Non-Interactive User Sign-In Log (Preview)",
-                                  "value": "NonInteractiveUserSignInLogs"
-                              },
-                              {
-                                  "label": "Service Principal Sign-In Logs (Preview)",
-                                  "value": "ServicePrincipalSignInLogs"
-                              },
-                              {
-                                  "label": "Managed Identity Sign-In Logs (Preview)",
-                                  "value": "ManagedIdentitySignInLogs"
-                              },
-                              {
-                                  "label": "Provisioning Logs (Preview)",
-                                  "value": "ProvisioningLogs"
-                              },
-                              {
-                                  "label": "ADFS Sign-In Logs (Preview)",
-                                  "value": "ADFSSignInLogs"
-                              },
-                              {
-                                  "label": "User Risk Events (Preview)",
-                                  "value": "UserRiskEvents"
-                              },
-                              {
-                                  "label": "Risky Users (Preview)",
-                                  "value": "RiskyUsers"
-                              },
-                              {
-                                  "label": "Network Access Traffic Logs (Preview)",
-                                  "value": "NetworkAccessTrafficLogs"
-                              },
-                              {
-                                  "label": "Risky Service Principals (Preview)",
-                                  "value": "RiskyServicePrincipals"
-                              },
-                              {
-                                  "label": "Service Principal Risk Events (Preview)",
-                                  "value": "ServicePrincipalRiskEvents"
-                              }
-                          ],
-                          "required": false
-                      },
-                      "visible": "[if(contains(steps('dataConnectors').enableDataConnectors,'AzureActiveDirectory'),true,false)]"
                   }
               ]
           },
