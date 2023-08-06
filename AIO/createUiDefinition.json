@@ -270,7 +270,7 @@
                                 "value": "Office365"
                             }
                           ],
-                          "required": true
+                          "required": false
                       },
                       "visible": true
                   }
