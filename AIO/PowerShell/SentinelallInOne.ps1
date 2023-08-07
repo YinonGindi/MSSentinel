@@ -491,7 +491,6 @@ else{
     }
 }
 Register-AzResourceProvider -ProviderNamespace Microsoft.ManagedServices |Out-Null
-Write-output("")| Tee-Object -FilePath $filep -Append
 Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [*] Registering Partner")| Tee-Object -FilePath $filep -Append
 try{
     $script:PAL=New-AzManagementPartner -PartnerId 6144412 -ErrorAction stop
@@ -532,7 +531,7 @@ try{
     $script:BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($script:NewSPN.Secret) 
     $script:UnsecureSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($script:BSTR)
     Write-Output("")| Tee-Object -FilePath $filep -Append
-    Write-Output("----------------------------------------------------------------------")| Tee-Object -FilePath $filep -Append
+    Write-Output("-----------------------------------Summary-----------------------------------")| Tee-Object -FilePath $filep -Append
     Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] TenantID: "+$script:context.Tenant.Id) | Tee-Object -FilePath $script:filep -Append
     Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] SubscriptionId: "+$script:SubscriptionId) | Tee-Object -FilePath $script:filep -Append
     Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] ApplicationID: "+$script:NewSPN.ApplicationId) | Tee-Object -FilePath $script:filep -Append
