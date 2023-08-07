@@ -1,3 +1,7 @@
+##SentinelallInOne
+##Automate deploymeny for Microsoft Sentinel
+##v1.0.1
+
 param(
     [Parameter(Mandatory=$true)]$OrganizationName
 )
@@ -95,7 +99,7 @@ $script:Workspace="LA-$OrganizationName-Sentinel"
 $script:ConnectorsFile = "$PSScriptRoot\connectors.json"
 
 #Create Resource Group
-$script:RgExist=$true
+$script:RgExist=$false
 $script:RG=Get-AzResourceGroup  -ErrorAction SilentlyContinue
 while(1 -eq 1){
     Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [*] Select target resource group or create a new one")
@@ -103,7 +107,7 @@ while(1 -eq 1){
         Write-Output("     ["+($script:i+1)+"] "+$script:RG.ResourceGroupName[$script:i])
     }
     if("RG-$OrganizationName-Sentinel" -notin $script:RG.ResourceGroupName){
-        $script:RgExist=$false
+        $script:RgExist=$true
         Write-Output("     ["+($script:i+1)+"] Create new resource group named RG-$OrganizationName-Sentinel")
     }
     $script:uip=read-host "[*] Please choose resource group"
@@ -128,7 +132,7 @@ while(1 -eq 1){
             $script:ResourceGroup="RG-$OrganizationName-Sentinel"
             New-AzResourceGroup -Name $script:ResourceGroup -Location $script:Location | out-null
         }
-        else{
+        elseif($script:uip -le ($script:i+1)){
             $script:Location=$script:RG.Location[$script:uip-1]
             $script:ResourceGroup=$script:RG.ResourceGroupName[$script:uip-1]
             Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] $script:ResourceGroup located on $script:Location is selected!") | Tee-Object -FilePath $filep -Append
@@ -229,8 +233,8 @@ function BuildDataconnectorPayload($script:dataConnector, $script:guid, $script:
 		$script:connectorBody = @{}
 
 		$script:connectorBody | Add-Member -NotePropertyName kind -NotePropertyValue $script:dataConnector.kind -Force
-		$script:connectorBody | Add-Member -NotePropertyName name -NotePropertyValue $script:guid -Force
-		$script:connectorBody | Add-Member -NotePropertyName etag -NotePropertyValue $script:etag -Force
+		#$script:connectorBody | Add-Member -NotePropertyName name -NotePropertyValue $script:guid -Force
+		#$script:connectorBody | Add-Member -NotePropertyName etag -NotePropertyValue $script:etag -Force
 		$script:connectorBody | Add-Member -NotePropertyName properties -NotePropertyValue $script:connectorProperties
 	}
 	else {
@@ -248,55 +252,63 @@ function BuildDataconnectorPayload($script:dataConnector, $script:guid, $script:
 	return $script:connectorBody
 }
 
-function EnableOrUpdateDataconnector($script:baseUri, $script:guid, $script:connectorBody, $script:isEnabled){
-    break 
-    switch($script:guid){
-        {$script:guid -eq $null -and $script:connector.kind -eq "AzureSecurityCenter"}{$script:guid="763f9fa1-c2d3-4fa2-93e9-bccd4899aa12"}
-        {$script:guid -eq $null -and $script:connector.kind -eq"Office365"}{$script:guid="13143a7c-6e86-4c0b-9c4e-720ba910a82a"}
-        {$script:guid -eq $null -and $script:connector.kind -eq"MicrosoftThreatProtection"}{$script:guid="MicrosoftThreatProtection"}
-        {$script:guid -eq $null -and $script:connector.kind -eq"OfficeIrm"}{$script:guid="5e2b1b74-164f-455b-8157-15bfcb190226"}
-        {$script:guid -eq $null -and $script:connector.kind -eq"AzureActiveDirectory"}{$script:guid="d331e394-0d6e-403d-a0b0-bcb257edbccc"}
-    }
-	$script:uri = "$script:baseUri/providers/Microsoft.SecurityInsights/dataConnectors/"+$script:guid+"?api-version=2022-07-01-preview"
+function EnableOrUpdateDataconnector($script:baseUri, $script:guid, $script:connectorBody, $script:isEnabled){ 
+	$script:uri = "$script:baseUri/providers/Microsoft.SecurityInsights/dataConnectors/"+$script:connector.kind+"?api-version=2022-07-01-preview"
 	try {
-		$script:result = Invoke-AzRestMethod -Path $script:uri -Method PUT -Payload ($script:connectorBody | ConvertTo-Json )
-        Write-Output($script:result)
-		if ($script:result.StatusCode -eq 200) {
+		$script:result = Invoke-AzRestMethod -Path $script:uri -Method PUT -Payload ($script:connectorBody | ConvertTo-Json -Depth 8 )
+		if ($script:result.StatusCode -in (200,201)) {
 			if ($script:isEnabled){
 				Write-Host "Successfully updated data connector: $($script:connector.kind)" -ForegroundColor Green
 			}
 			else {
-				Write-Host "Successfully enabled data connector: $($script:connector.kind)" -ForegroundColor Green
+				Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Successfully enabled data connector: $($script:connector.kind)")| Tee-Object -FilePath $filep -Append
 			}
 		}
 		else {
-			Write-Error "Unable to enable data connector $($script:connector.kind) with error: $($script:result.Content)"
+			Write-Error "Unable to enable data connector $($script:connector.kind) with error: $($script:result.Content)" | Tee-Object -FilePath $filep -Append
 		}
 		Write-Host ($script:body.Properties | Format-List | Format-Table | Out-String)
 	}
 	catch {
 		$script:errorReturn = $_
 		Write-Verbose $_
-		Write-Error "Unable to invoke webrequest with error message: $script:errorReturn" -ErrorAction Stop
+		Write-Error "Unable to invoke webrequest with error message: $script:errorReturn" -ErrorAction Stop | Tee-Object -FilePath $filep -Append
 	}
 }
 
-function EnableMSAnalyticsRule($script:msProduct){
-    Write-host("`r`n[!] Please enable the analytics rule for $script:msProduct! There is a bug on the module that need to be fixed")
-    break
-    try {
-        foreach ($script:rule in $script:msTemplates){
-            if ($script:rule.productFilter -eq $script:msProduct) {
-                New-AzSentinelAlertRule -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:Workspace -DisplayName $script:rule.displayName -MicrosoftSecurityIncidentCreation -Description $script:rule.description -ProductFilter $script:rule.productFilter  -AlertRuleTemplate $script:rule.Name
-                Write-Host "Done!" -ForegroundColor Green
+function EnableMSAnalyticsRule(){
+    $script:ContentTemprtURI = "$script:baseUri/providers/Microsoft.SecurityInsights/alertRuleTemplates?api-version=2023-06-01-preview"
+    $script:alertRulesResults=(Invoke-AzRestMethod -Path $script:ContentTemprtURI -Method GET)
+    foreach($row in (($script:alertRulesResults.Content | ConvertFrom-Json).value | where {$_.kind -eq "MicrosoftSecurityIncidentCreation" -and $_.properties.productFilter -ne "Azure Security Center for IoT"})){
+        $script:alertRulesURI = "$script:baseUri/providers/Microsoft.SecurityInsights/alertRules/$($row.name)?api-version=2023-06-01-preview"
+        $script:alertRulesPayload = @{
+            "etag"= (New-Guid).Guid
+            "kind"= "MicrosoftSecurityIncidentCreation"
+            "properties"= @{
+              "productFilter"= $row.properties.productFilter
+              "displayName"= $row.properties.displayName
+              "enabled"= $true
+        }
+    }
+    Write-Host "Adding Analytics Rule for data connector $(($row.properties.description -split ' in ')[-1])..." -NoNewline
+    try{
+        $script:AnalyticsRulesResults=(Invoke-AzRestMethod -Path $script:alertRulesURI -Method PUT -Payload ($script:alertRulesPayload | ConvertTo-Json -Depth 3))
+        if ($script:AnalyticsRulesResults.StatusCode -in (200,201)) {
+                Write-Host "Successfully added Analytics Rule"
+                Write-Verbose $script:result
+            }
+            elseif ($script:result.StatusCode -eq 405){
+                Write-Host "$($script:connector.kind) method is not allowed"
+            }
+            else {
+                Write-Host "Failed adding Analytics Rule" -NoNewline
             }
         }
-	}
-	catch {
-		$script:errorReturn = $_
-		Write-verbose $_
-		Write-Error "Unable to create analytics rule with error message: $script:errorReturn" -ErrorAction Stop
-	}
+        catch { 
+            $script:errorReturn = $_
+            Write-Error "Unable to invoke webrequest with error message: $script:errorReturn" -ErrorAction Stop
+        }
+    }
 }
 
 #Getting all rules from file
