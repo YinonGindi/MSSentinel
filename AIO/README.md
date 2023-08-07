@@ -1,7 +1,7 @@
 # Microsoft Sentinel All In One - Free Tier
 
 <p align="center">
-<img src="./Media/ps.jpg?raw=true">
+<img src="./Media/Sentinel All-in-One logo.jpg?raw=true">
 </p>
 
 Microsoft Sentinel All-in-One is aimed at helping customers and partners quickly set up a full-fledged Microsoft Sentinel environment that is ready to use, speeding up deployment and initial configuration tasks in few clicks, saving time and simplifying Microsoft Sentinel setup.
