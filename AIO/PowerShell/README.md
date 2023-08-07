@@ -49,7 +49,3 @@ The following table summarizes permissions, licenses and permissions needed and 
 | Microsoft Insider Risk Management              | IRM license     | Global Admin or Security Admin  | Free      |
 | Office 365                                     | None            | Global Admin or Security Admin  | Free      |
 
-
-
-
-This repository was created based on <a href="https://github.com/Azure/Azure-Sentinel/tree/master/Tools/Sentinel-All-In-One">MS Sentinel AIO</a>
