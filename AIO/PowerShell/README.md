@@ -24,7 +24,7 @@ Microsoft Sentinel All-in-One automates the following tasks:
     + Microsoft Entra ID Identity Protection (Azure Active Directory Identity Protection)
     + Microsoft Insider Risk Management
     + Office 365
-- Enables analytics rules (Scheduled and NRT) that use any of the selected Data connectors, with the ability to filter by severity
+- Enables analytics rules for selected Microsoft 1st party products
 - Create Service Prinicipal Name required by BDO MDR
 - Assign the required permission to Service Prinicipal Name
 
