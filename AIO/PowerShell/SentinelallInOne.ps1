@@ -79,28 +79,28 @@ else{
 
 #select Subscription
 $sublist=Get-AzSubscription
-$count=1
+$script:count=1
 if($sublist.Length -eq 1){
-    $userselect=1
+    $script:userselect=1
 }
 else{
     foreach($sub in $sublist){
-        Write-Output("     [$count] "+$sub.Name)
-        $count++ 
+        Write-Output("     [$script:count] "+$sub.Name)
+        $script:count++ 
     }
-    $userselect=Read-Host "[*] Please select a subscription"
+    $script:userselect=Read-Host "[*] Please select a subscription"
     #check for valid input
     while(1 -eq 1){
-        if($sublist[$userselect-1] -eq $null){
-            $userselect=Read-Host "[*] ERROR! Please enter a valid number"
+        if($sublist[$script:userselect-1] -eq $null){
+            $script:userselect=Read-Host "[*] ERROR! Please enter a valid number"
         }
         else{
             break
         }
     }
 }
-$script:temp=Select-AzSubscription -SubscriptionId $sublist[$userselect-1].Id
-$script:SubscriptionId=$script:sublist[$userselect-1].Id
+$script:temp=Select-AzSubscription -SubscriptionId $sublist[$script:userselect-1].Id
+$script:SubscriptionId=$script:sublist[$script:userselect-1].Id
 $script:Workspace="LA-$OrganizationName-Sentinel"
 $script:ConnectorsFile = "$PSScriptRoot\connectors.json"
 
@@ -350,7 +350,7 @@ foreach ($script:connector in $script:connectors.connectors) {
                 "logAnalytics"="/subscriptions/$script:SubscriptionId/resourcegroups/$script:ResourceGroup/providers/microsoft.operationalinsights/workspaces/$script:Workspace"
             }
             $script:def = Get-AzPolicyDefinition -Id "/providers/Microsoft.Authorization/policyDefinitions/2465583e-4e78-4c15-b6be-a36cbc7c8b0f"
-            $script:PolicyOutput=New-AzPolicyAssignment -Name "Configure Azure Activity logs to stream to Log Analytics" -Description "Deploys the diagnostic settings for Azure Activity to stream subscriptions audit logs to a Log Analytics workspace to monitor subscription-level events" -PolicyDefinition $script:def -Scope "/subscriptions/$script:SubscriptionId" -AssignIdentity -Location $Location -PolicyParameterObject $parameters
+            $script:PolicyOutput=New-AzPolicyAssignment -Name "Configure Azure Activity logs to stream to Log Analytics" -Description "Deploys the diagnostic settings for Azure Activity to stream subscriptions audit logs to a Log Analytics workspace to monitor subscription-level events" -PolicyDefinition $script:def -Scope "/subscriptions/$script:SubscriptionId" -AssignIdentity -Location $script:Location -PolicyParameterObject $parameters
             $script:RemediationsURI = "/subscriptions/$script:SubscriptionId/providers/Microsoft.PolicyInsights/remediations/ConfigureAzureActivitylogstostreamtoLogAnalytics?api-version=2021-10-01"
             $script:RemediationsPayload= @{
                 "properties"= @{
@@ -423,18 +423,18 @@ foreach ($script:connector in $script:connectors.connectors) {
 function EnableMSAnalyticsRule(){
     $script:ContentTemprtURI = "$script:baseUri/providers/Microsoft.SecurityInsights/alertRuleTemplates?api-version=2023-06-01-preview"
     $script:alertRulesResults=(Invoke-AzRestMethod -Path $script:ContentTemprtURI -Method GET)
-    foreach($row in (($script:alertRulesResults.Content | ConvertFrom-Json).value | where {$_.kind -eq "MicrosoftSecurityIncidentCreation" -and $_.properties.productFilter -ne "Azure Security Center for IoT"})){
-        $script:alertRulesURI = "$script:baseUri/providers/Microsoft.SecurityInsights/alertRules/$($row.name)?api-version=2023-06-01-preview"
+    foreach($script:row in (($script:alertRulesResults.Content | ConvertFrom-Json).value | where {$_.kind -eq "MicrosoftSecurityIncidentCreation" -and $_.properties.productFilter -ne "Azure Security Center for IoT"})){
+        $script:alertRulesURI = "$script:baseUri/providers/Microsoft.SecurityInsights/alertRules/$($script:row.name)?api-version=2023-06-01-preview"
         $script:alertRulesPayload = @{
             "etag"= (New-Guid).Guid
             "kind"= "MicrosoftSecurityIncidentCreation"
             "properties"= @{
-              "productFilter"= $row.properties.productFilter
-              "displayName"= $row.properties.displayName
+              "productFilter"= $script:row.properties.productFilter
+              "displayName"= $script:row.properties.displayName
               "enabled"= $true
         }
     }
-    Write-Host "Adding Analytics Rule for data connector $(($row.properties.description -split ' in ')[-1])..." -NoNewline
+    Write-Host "Adding Analytics Rule for data connector $(($script:row.properties.description -split ' in ')[-1])..." -NoNewline
     try{
         $script:AnalyticsRulesResults=(Invoke-AzRestMethod -Path $script:alertRulesURI -Method PUT -Payload ($script:alertRulesPayload | ConvertTo-Json -Depth 3))
         if ($script:AnalyticsRulesResults.StatusCode -in (200,201)) {
@@ -467,13 +467,25 @@ EnableMSAnalyticsRule
 Register-AzResourceProvider -ProviderNamespace Microsoft.ManagedServices |Out-Null
 Write-output("")| Tee-Object -FilePath $filep -Append
 Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [*] Registering Partner")| Tee-Object -FilePath $filep -Append
-$script:PAL=New-AzManagementPartner -PartnerId 6144412
-if($script:PAL.State -eq "Active"){
-    Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Successfully Registered Partner $($script:PAL.PartnerName) ($($script:PAL.PartnerId))")| Tee-Object -FilePath $filep -Append
+try{
+    $script:PAL=New-AzManagementPartner -PartnerId 6144412 -ErrorAction stop
+    if($script:PAL.State -eq "Active"){
+        Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Successfully Registered Partner $($script:PAL.PartnerName) ($($script:PAL.PartnerId))")
+    }
+    else{
+        Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Failed Registering")| Tee-Object -FilePath $filep -Append
+    }
 }
-else{
-    Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Failed Registering")| Tee-Object -FilePath $filep -Append
+catch{
+    $script:errorReturn = $_
+    if($script:errorReturn.Exception.Message -eq "Operation failed with message 'This user or service principal is already linked with a Partner ID'"){
+        Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Already registered with PAL")| Tee-Object -FilePath $filep -Append
+    }
+    else{
+        Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Unknown Error! $($script:errorReturn)")| Tee-Object -FilePath $filep -Append
+    }
 }
+
 Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [*] Creating Lighthouse Delegation")| Tee-Object -FilePath $filep -Append
 $script:LighthouseResults=New-AzDeployment -Name "BDO_Managed_Sentinel" -Location $script:Location -TemplateFile "$PSScriptRoot\rgDelegatedResourceManagement.json" -TemplateParameterFile "$PSScriptRoot\rgDelegatedResourceManagement.parameters.json" -Verbose
 if($script:LighthouseResults.ProvisioningState -eq "Succeeded"){
