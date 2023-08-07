@@ -1,15 +1,17 @@
 ##SentinelallInOne
 ##This script will automate the deployment for Microsoft Sentinel
-##v1.0.2
-
+##v1.0.3
 param(
     [Parameter(Mandatory=$true)]$OrganizationName
 )
+Clear-Host
 
 #start stopwatch
 $script:stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 #create log file location
 $script:filep=$PSScriptRoot+'\'+((get-date).ToShortDateString()).Replace('/','')+'SentinelAIO.txt'
+
+Write-Output("")| Tee-Object -FilePath $filep -Append
 Write-Output("-----------------------------------Sentinel All-In-One-----------------------------------")| Tee-Object -FilePath $filep -Append
 
 #Check if required files located
@@ -56,7 +58,11 @@ function CheckModules($script:module) {
     #Import-Module will bring the module and its functions into your current powershell session, if the module is installed.  
 }
 
-import-Module az.accounts -MinimumVersion 2.10.0
+import-Module az.accounts -MinimumVersion 2.10.0 -Force
+if([System.Version](get-module az.accounts).Version -gt [System.Version]"2.9.1"){
+    Remove-Module az.accounts
+    import-Module az.accounts -MinimumVersion 2.10.0 -Force
+}
 CheckModules("Az.Resources")
 CheckModules("Az.OperationalInsights")
 CheckModules("Az.SecurityInsights")
@@ -162,6 +168,8 @@ while(1 -eq 1){
         break
     }
 }
+Write-Output("")| Tee-Object -FilePath $filep -Append
+
 
 #Create Log Analytics workspace
 try {
@@ -187,6 +195,8 @@ else {
     $script:temp=Update-AzSentinelSetting -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:WorkspaceObject.Name -SettingsName 'EyesOn' -Enabled $true
     $script:temp=Update-AzSentinelSetting -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:WorkspaceObject.Name -SettingsName 'Anomalies' -Enabled $false
 }
+Write-Output("")| Tee-Object -FilePath $filep -Append
+
 
 #Urls to be used for Sentinel API calls
 $script:baseUri = "/subscriptions/${SubscriptionId}/resourceGroups/${ResourceGroup}/providers/Microsoft.OperationalInsights/workspaces/${Workspace}"
@@ -445,7 +455,7 @@ function EnableMSAnalyticsRule(){
                 Write-Host "$($script:connector.kind) method is not allowed"
             }
             else {
-                Write-Host "Failed adding Analytics Rule" -NoNewline
+                Write-Host "Failed adding Analytics Rule"
             }
         }
         catch { 
@@ -460,10 +470,26 @@ $script:temp=New-AzSentinelAlertRule -ResourceGroupName $script:ResourceGroup -W
 
 #Incident for Defender products
 EnableMSAnalyticsRule
+Write-Output("")| Tee-Object -FilePath $filep -Append
+
 
 #Create Lighthouse Delegation
-(Get-Content "$PSScriptRoot\rgDelegatedResourceManagement.parameters.json").replace('<RGNAME>', $script:ResourceGroup) | Set-Content "$PSScriptRoot\rgDelegatedResourceManagement.parameters.json"
-(Get-Content "$PSScriptRoot\rgDelegatedResourceManagement.json").replace('<LOCATION>', $script:Location) | Set-Content "$PSScriptRoot\rgDelegatedResourceManagement.json"
+$script:paramFile=(Get-Content "$PSScriptRoot\rgDelegatedResourceManagement.parameters.json")
+if($script:paramFile -contains "<RGNAME>"){
+    $script:paramFile.replace('<RGNAME>', $script:ResourceGroup) | Set-Content "$PSScriptRoot\rgDelegatedResourceManagement.parameters.json"
+}
+else{
+    $script:ParamRG=(($script:paramFile -split '"rgName"') -split '"')[28]
+    Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] File Contains Resource Group named: $($script:ParamRG)!")| Tee-Object -FilePath $filep -Append
+    $script:RG=Get-AzResourceGroup  -ErrorAction SilentlyContinue
+    if($script:ParamRG -in $script:Rg.ResourceGroupName){
+        Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [*] Resource Group $($script:ParamRG) is located!")| Tee-Object -FilePath $filep -Append    
+    }
+    else{
+        Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Rewriting resource group on file $($script:ParamRG) with $($script:ResourceGroup)!")| Tee-Object -FilePath $filep -Append
+        $script:paramFile.replace($script:ParamRG, $script:ResourceGroup) | Set-Content "$PSScriptRoot\rgDelegatedResourceManagement.parameters.json"
+    }
+}
 Register-AzResourceProvider -ProviderNamespace Microsoft.ManagedServices |Out-Null
 Write-output("")| Tee-Object -FilePath $filep -Append
 Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [*] Registering Partner")| Tee-Object -FilePath $filep -Append
@@ -494,13 +520,15 @@ if($script:LighthouseResults.ProvisioningState -eq "Succeeded"){
 else{
     Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Failed Deployed Azure Lighthouse!")| Tee-Object -FilePath $filep -Append
 }
+Write-Output("")| Tee-Object -FilePath $filep -Append
+
 
 #Create BDOCDCApp
 try{
     $script:startDate = Get-Date
     $script:endDate = $script:startDate.AddYears(100)
     $script:NewSPN=New-AzADServicePrincipal -DisplayName BDOCDCApp -Role 'Log Analytics Reader' -Scope "/subscriptions/$script:SubscriptionId" -StartDate $script:startDate -EndDate $script:endDate -WarningAction SilentlyContinue
-    New-AzRoleAssignment -ObjectId $script:NewSPN.Id -RoleDefinitionName 'Network Contributor' -Scope "/subscriptions/$script:SubscriptionId" |Out-Null
+    New-AzRoleAssignment -ObjectId $script:NewSPN.Id -RoleDefinitionName 'Network Contributor' -Scope "/subscriptions/$script:SubscriptionId" -WarningAction SilentlyContinue |Out-Null
     $script:BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($script:NewSPN.Secret) 
     $script:UnsecureSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($script:BSTR)
     Write-Output("")| Tee-Object -FilePath $filep -Append
