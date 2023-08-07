@@ -43,6 +43,9 @@
             "kind": "MicrosoftThreatProtection",
             "properties": {
                 "dataTypes": {
+                  "incidents": {
+                        "state": "enabled"
+                    },
                     "alerts": {
                         "state": "enabled"
                     }
