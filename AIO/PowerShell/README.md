@@ -1,4 +1,4 @@
-# Microsoft Sentinel All In One - Free Tier
+# Microsoft Sentinel All In One - PowerShell Version
 
 <p align="center">
 <img src="..//Media/ps.jpg?raw=true">
