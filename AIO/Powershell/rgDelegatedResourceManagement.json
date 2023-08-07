@@ -66,6 +66,7 @@
             "apiVersion": "2018-05-01",
             "name": "rgAssignment",
             "resourceGroup": "[parameters('rgName')]",
+            "location":"<LOCATION>",
             "dependsOn": [
                 "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
             ],
