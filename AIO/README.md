@@ -4,30 +4,16 @@
 <img src="./Media/Sentinel All-in-One logo.jpg?raw=true">
 </p>
 
-Microsoft Sentinel All-in-One is aimed at helping customers and partners quickly set up a full-fledged Microsoft Sentinel environment that is ready to use, speeding up deployment and initial configuration tasks in few clicks, saving time and simplifying Microsoft Sentinel setup.
 
+The overarching goal of Microsoft Sentinel All-in-One is to provide robust support for customers and partners by facilitating the seamless establishment of a comprehensive Microsoft Sentinel environment. This carefully curated solution is meticulously crafted to accelerate the deployment and initial configuration phases of Microsoft Sentinel, ensuring that the entire process can be accomplished with remarkable efficiency and minimal effort.
 
-## What does All-in-One do?
+By offering a holistic approach to setting up Microsoft Sentinel, this innovative tool eliminates the need for arduous and time-consuming manual configurations. Instead, it offers a user-friendly experience that requires only a few clicks, making it an invaluable resource for expediting the implementation process. This, in turn, translates to a significant reduction in the time and resources typically invested in configuring Microsoft Sentinel.
 
-Microsoft Sentinel All-in-One automates the following tasks:
+The intricate complexities that often accompany the setup of advanced security solutions are effectively mitigated by the streamlined functionality of Microsoft Sentinel All-in-One. Its comprehensive framework not only expedites the deployment of Microsoft Sentinel but also ensures that the resulting environment is optimized for immediate utilization. This optimized environment, coupled with the simplified setup process, stands as a testament to Microsoft's commitment to empowering its customers and partners with tools that enhance operational efficiency while minimizing unnecessary intricacies.
 
-- Creates resource group
-- Creates the **Azure Lighthouse** registration definition
-- Creates the **Azure Lighthouse** registration assignments for BDOMDR to the resource group that will contain the Azure Sentinel resources
-- Creates Log Analytics workspace
-- Installs Microsoft Sentinel on top of the workspace
-- Sets workspace retention, daily cap and commitment tiers if desired
-- Enables Free Data Connectors from this list:
-    + Azure Activity (from current subscription)
-    + Microsoft 365 Defender (Microsoft Defender for Endpoint, Microsoft Defender for Identity, Microsoft Defender for Office, Microsoft Defender for Cloud Apps)
-    + Microsoft Defender for Cloud (Azure Security Center)
-    + Microsoft Entra ID Identity Protection (Azure Active Directory Identity Protection)
-    + Microsoft Insider Risk Management
-    + Office 365
-- Enables analytics rules (Scheduled and NRT) that use any of the selected Data connectors, with the ability to filter by severity
-- Create Service Prinicipal Name required by BDO MDR
-- Assign the required permission to Service Prinicipal Name
+In conclusion, Microsoft Sentinel All-in-One stands as a pivotal innovation in the realm of security solutions, aiming to revolutionize the way customers and partners interact with and implement Microsoft Sentinel. By providing a platform that not only accelerates deployment but also simplifies the initial configuration, Microsoft has taken a significant stride towards redefining the standards of convenience and effectiveness in setting up a robust security environment.
 
+This is a special version of the Azure Sentinel All-In-One artifact that includes **Azure Lighthouse** delegation as part of the deployment.
 
 ## Prerequisites
 
