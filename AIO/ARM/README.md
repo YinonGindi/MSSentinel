@@ -1,4 +1,4 @@
-# Microsoft Sentinel All In One - Free Tier
+# Microsoft Sentinel All In One - ARM Version
 
 <p align="center">
 <img src="../Media/arm.jpg?raw=true">
