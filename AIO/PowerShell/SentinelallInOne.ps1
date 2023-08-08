@@ -1,9 +1,14 @@
 ##SentinelallInOne
 ##This script will automate the deployment for Microsoft Sentinel
-##v1.0.3
+##v1.0.4
 param(
     [Parameter(Mandatory=$true)]$OrganizationName
 )
+if($OrganizationName -eq "customername"){
+    $script:temp=((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] InputError! Stopping script! CustomerName is invalid input, please enter a valid OrganizationName!")
+    read-host $script:temp
+    exit 0
+}
 Clear-Host
 
 #start stopwatch
