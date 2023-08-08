@@ -441,7 +441,6 @@ function EnableMSAnalyticsRule(){
     foreach($script:row in (($script:alertRulesResults.Content | ConvertFrom-Json).value | where {$_.kind -eq "MicrosoftSecurityIncidentCreation" -and $_.properties.productFilter -ne "Azure Security Center for IoT"})){
         $script:alertRulesURI = "$script:baseUri/providers/Microsoft.SecurityInsights/alertRules/$($script:row.name)?api-version=2023-06-01-preview"
         $script:alertRulesPayload = @{
-            "etag"= (New-Guid).Guid
             "kind"= "MicrosoftSecurityIncidentCreation"
             "properties"= @{
               "productFilter"= $script:row.properties.productFilter
@@ -460,7 +459,7 @@ function EnableMSAnalyticsRule(){
                 Write-Host "$($script:connector.kind) method is not allowed"
             }
             else {
-                Write-Host "Failed adding Analytics Rule"
+                Write-Output("Failed adding Analytics Rule! $($script:AnalyticsRulesResults.Content)")| Tee-Object -FilePath $filep -Append
             }
         }
         catch { 
