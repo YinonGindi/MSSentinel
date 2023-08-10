@@ -1,6 +1,7 @@
 ##SentinelallInOne
 ##This script will automate the deployment for Microsoft Sentinel
-##v1.0.4
+##v1.0.5
+
 param(
     [Parameter(Mandatory=$true)]$OrganizationName
 )
@@ -196,9 +197,15 @@ if (($script:solutions | Where-Object Name -eq 'SecurityInsights').Enabled) {
 }
 else {    
 	Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Installing Microsoft Sentinel on workspace $($script:Workspace)")| Tee-Object -FilePath $filep -Append
-    New-AzMonitorLogAnalyticsSolution -Type SecurityInsights -ResourceGroupName $script:ResourceGroup -Location ($script:WorkspaceObject.Location) -WorkspaceResourceId $script:WorkspaceObject.ResourceId
-    $script:temp=Update-AzSentinelSetting -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:WorkspaceObject.Name -SettingsName 'EyesOn' -Enabled $true
-    $script:temp=Update-AzSentinelSetting -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:WorkspaceObject.Name -SettingsName 'Anomalies' -Enabled $false
+    $script:SentinelResult=New-AzMonitorLogAnalyticsSolution -Type SecurityInsights -ResourceGroupName $script:ResourceGroup -Location ($script:WorkspaceObject.Location) -WorkspaceResourceId $script:WorkspaceObject.ResourceId
+    if($script:SentinelResult.ProvisioningState -eq "Succeeded"){
+        Write-Output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Microsoft Sentinel was successfully installed on workspace $($script:Workspace)")| Tee-Object -FilePath $filep -Append
+        $script:temp=Update-AzSentinelSetting -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:WorkspaceObject.Name -SettingsName 'EyesOn' -Enabled $true
+        $script:temp=Update-AzSentinelSetting -ResourceGroupName $script:ResourceGroup -WorkspaceName $script:WorkspaceObject.Name -SettingsName 'Anomalies' -Enabled $false
+    }
+    else{
+        Write-Error((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Unable to invoke webrequest with error message: $($script:errorReturn)") -ErrorAction Stop | Tee-Object -FilePath $filep -Append
+    }
 }
 Write-Output("")| Tee-Object -FilePath $filep -Append
 
@@ -260,7 +267,7 @@ function BuildDataconnectorPayload($script:dataConnector, $script:guid, $script:
     
     if ($script:isEnabled) {
 		# Compose body for connector update scenario
-		Write-Host "Updating data connector $($script:dataConnector.kind)"
+		Write-Host "Updating data connector $(GetProductNewName($script:dataConnector.kind))"
 		Write-Verbose "Name: $script:guid"
 		Write-Verbose "Etag: $script:etag"
 		
@@ -273,8 +280,8 @@ function BuildDataconnectorPayload($script:dataConnector, $script:guid, $script:
 	}
 	else {
 		# Compose body for connector enable scenario
-		Write-Host "$($script:dataConnector.kind) data connector is not enabled yet"
-		Write-Host "Enabling data connector $($script:dataConnector.kind)"
+		Write-Host "$(GetProductNewName($script:dataConnector.kind)) data connector is not enabled yet"
+		Write-Host "Enabling data connector $(GetProductNewName($script:dataConnector.kind))"
         Write-Verbose "Name: $script:guid"
         
 		$script:connectorBody = @{}
@@ -286,20 +293,32 @@ function BuildDataconnectorPayload($script:dataConnector, $script:guid, $script:
 	return $script:connectorBody
 }
 
+function GetProductNewName($product){
+    switch($product){
+        "AzureSecurityCenter"{return "Microsoft Defender for Cloud (Azure Security Center)"}
+        "AzureActiveDirectory"{return "Microsoft Entra ID Identity Protection (Azure AD identity Protection)"}
+        "MicrosoftThreatProtection"{return "Microsoft 365 Defender"}
+        "Office365"{return "Microsoft 365 (Office 365)"}
+        "AzureActivityLog"{return "Azure Activity"}
+        "OfficeIRM"{return "Microsoft 365 Insider Risk Management"}
+        default {return $product}
+    }
+}
+
 function EnableOrUpdateDataconnector($script:baseUri, $script:guid, $script:connectorBody, $script:isEnabled){ 
 	$script:uri = "$script:baseUri/providers/Microsoft.SecurityInsights/dataConnectors/"+$script:connector.kind+"?api-version=2022-07-01-preview"
 	try {
 		$script:result = Invoke-AzRestMethod -Path $script:uri -Method PUT -Payload ($script:connectorBody | ConvertTo-Json -Depth 8 )
 		if ($script:result.StatusCode -in (200,201)) {
 			if ($script:isEnabled){
-				Write-Host "Successfully updated data connector: $($script:connector.kind)" -ForegroundColor Green
+				Write-Host "Successfully updated data connector: $(GetProductNewName($script:connector.kind))" -ForegroundColor Green
 			}
 			else {
-				Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Successfully enabled data connector: $($script:connector.kind)")| Tee-Object -FilePath $filep -Append
+				Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [$] Successfully enabled data connector: $(GetProductNewName($script:connector.kind))")| Tee-Object -FilePath $filep -Append
 			}
 		}
 		else {
-			Write-Error "Unable to enable data connector $($script:connector.kind) with error: $($script:result.Content)" | Tee-Object -FilePath $filep -Append
+			Write-Error "Unable to enable data connector $(GetProductNewName($script:connector.kind)) with error: $($script:result.Content)" | Tee-Object -FilePath $filep -Append
 		}
 		Write-Host ($script:body.Properties | Format-List | Format-Table | Out-String)
 	}
@@ -319,7 +338,7 @@ $script:allConnectedDataconnectors = Get-ConnectedDataconnectors
 
 foreach ($script:connector in $script:connectors.connectors) {
     Write-Host "`r`nProcessing connector: " -NoNewline 
-    Write-Host "$($script:connector.kind)"
+    Write-Host "$(GetProductNewName($script:connector.kind))"
 
     #AzureActivityLog connector
      if ($script:connector.kind -eq "AzureActivityLog") {
@@ -335,15 +354,15 @@ foreach ($script:connector in $script:connectors.connectors) {
             if ($script:result.StatusCode -in (200,201)){
                 Write-Host "Successfully queried data connector ${connector.kind} - already enabled"
                 Write-Verbose $script:result
-                Write-Host "Updating data connector $($script:connector.kind)"
+                Write-Host "Updating data connector $(GetProductNewName($script:connector.kind))"
                 $script:activityEnabled = $script:true
             }
             elseif ($script:result.StatusCode -eq 405){
-                Write-Host "$($script:connector.kind) method is not allowed"
+                Write-Host "$(GetProductNewName($script:connector.kind)) method is not allowed"
             }
             else {
-                Write-Host "$($script:connector.kind) data connector is not enabled yet"
-                Write-Host "Enabling data connector $($script:connector.kind)"
+                Write-Host "$(GetProductNewName($script:connector.kind)) data connector is not enabled yet"
+                Write-Host "Enabling data connector $(GetProductNewName($script:connector.kind))"
                 $script:activityEnabled = $false
             }
         }
@@ -379,7 +398,7 @@ foreach ($script:connector in $script:connectors.connectors) {
 			else {
 				Write-output((GET-DATE -Format "dd/MM/yyy HH:mm")+" - [!] Failed creation remediation task")| Tee-Object -FilePath $filep -Append
 			}
-            Write-Host "Successfully enabled data connector: $($script:connector.kind)" -ForegroundColor Green 
+            Write-Host "Successfully enabled data connector: $(GetProductNewName($script:connector.kind))" -ForegroundColor Green 
             Write-Verbose ($script:body.Properties | Format-List | Format-Table | Out-String)
         }
         catch {
@@ -396,7 +415,6 @@ foreach ($script:connector in $script:connectors.connectors) {
         $script:connectorProperties = checkDataConnector($script:connector.kind)
         $script:dataConnectorBody = BuildDataconnectorPayload $script:connector $script:connectorProperties.guid $script:connectorProperties.etag $script:connectorProperties.isEnabled
         EnableOrUpdateDataconnector $script:baseUri $script:connectorProperties.guid $script:dataConnectorBody $script:connectorProperties.isEnabled
-        Write-Host "Adding Analytics Rule for data connector Microsoft Defender for Cloud..." -NoNewline
     }
     #Office365 connector
     elseif ($script:connector.kind -eq "Office365") {
@@ -413,7 +431,6 @@ foreach ($script:connector in $script:connectors.connectors) {
         $script:connectorProperties = checkDataConnector($script:connector.kind)
         $script:dataConnectorBody = BuildDataconnectorPayload $script:connector $script:connectorProperties.guid $script:connectorProperties.etag $script:connectorProperties.isEnabled
         EnableOrUpdateDataconnector $script:baseUri $script:connectorProperties.guid $script:dataConnectorBody $script:connectorProperties.isEnabled
-        Write-Host "Adding Analytics Rule for data connector Microsoft 365 Insider Risk Management..." -NoNewline
     }
     #Microsoft 365 Defender connector
     elseif ($script:connector.kind -eq "MicrosoftThreatProtection") {
@@ -422,7 +439,6 @@ foreach ($script:connector in $script:connectors.connectors) {
         $script:connectorProperties = checkDataConnector($script:connector.kind)
         $script:dataConnectorBody = BuildDataconnectorPayload $script:connector $script:connectorProperties.guid $script:connectorProperties.etag $script:connectorProperties.isEnabled
         EnableOrUpdateDataconnector $script:baseUri $script:connectorProperties.guid $script:dataConnectorBody $script:connectorProperties.isEnabled
-        Write-Host "Adding Analytics Rule for data connector Azure Advanced Threat Protection..." -NoNewline 
     }
     ##Microsoft Entra ID Identity Protection connector
     elseif ($script:connector.kind -eq "AzureActiveDirectory") {
@@ -448,7 +464,7 @@ function EnableMSAnalyticsRule(){
               "enabled"= $true
         }
     }
-    Write-Host "Adding Analytics Rule for data connector $(($script:row.properties.description -split ' in ')[-1])..." -NoNewline
+    Write-Host "Adding Analytics Rule for data connector $(GetProductNewName(($script:row.properties.description -split ' in ')[-1]))..." -NoNewline
     try{
         $script:AnalyticsRulesResults=(Invoke-AzRestMethod -Path $script:alertRulesURI -Method PUT -Payload ($script:alertRulesPayload | ConvertTo-Json -Depth 3))
         if ($script:AnalyticsRulesResults.StatusCode -in (200,201)) {
