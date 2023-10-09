@@ -13,10 +13,10 @@ BFAC
 BigCliqueBOT
 bilbo
 brutus
+brutus/aet
 bsqlbf
-CATExplorador
 burpsuite
-Nikto
+CATExplorador
 cgichk
 cisco-torch
 commix
@@ -30,6 +30,8 @@ email extractor
 fantomBrowser
 fantomCrew
 fhscan
+FHScan Core
+fhscan core 1.
 floodgate
 FooBar/42
 get-minimal
@@ -46,18 +48,26 @@ masscan
 Metasploit
 metis
 morfeus
+morfeus fucking scanner
+Mozilla/5.0 (Windows; U; Windows NT 5.1; pt-PT; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)
 mysqloit
-n-stealth
 nessus
 netsparker
+Nikto
 nmap
+nmap nse
+nmap scripting engine
+nmap-nse
 nsauditor
+n-stealth
 openvas
 pangolin
 paros
 pmafind
+powershell
 prog.customcrawler
 qualys was
+ruler
 s.t.a.l.k.e.r.
 ScanAlert
 security scan
@@ -69,11 +79,16 @@ sqlninja
 teh forest lobster
 this is an exploit
 toata dragostea
+toata dragostea mea pentru diavola
 uil2pn
+user-agent:
 vega/
 visvo
 voideye
 w3af
+w3af.org
+w3af.sf.net
+w3af.sourceforge.net
 webbandit
 webinspect
 Webscanner
@@ -84,9 +99,9 @@ webtrends security analyzer
 webvulnscan
 whatweb
 whcc/
+WindowsPowerShell
 wordpress hash grabber
 WPScan
 xmlrpc exploit
 XSpider
 zmeu
-powershell
