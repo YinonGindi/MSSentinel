@@ -1,4 +1,4 @@
-﻿_DTItemId,LastUpdatedTimeUTC [UTC],SearchKey,Action,App,Description,Direction,Name,Ports,Protocol,Severity,Tactic,Threshold,ThresholdType,Type
+﻿_DTItemId,LastUpdatedTimeUTC,SearchKey,Action,App,Description,Direction,Name,Ports,Protocol,Severity,Tactic,Threshold,ThresholdType,Type
 2b83304a-0c50-444d-bbac-311011d3a219,"8/28/2023, 9:52:06.564 AM",873,Allow,*,"Management - Rsync, unencrypted file transfer",*,High-risk Ports,873,TCP,Low,"InitialAccess,Discovery",0,Static,Hunting
 63e1ee66-4106-4824-84d5-417fa5e312fd,"8/28/2023, 9:52:06.564 AM",135,Allow,*,"Management - End Point Mapper, multiple remote management srvcs",*,High-risk Ports,135,UDP,Low,"InitialAccess,Discovery",0,Static,Hunting
 484682c1-144e-4909-a5ff-ef9c2f7a32e5,"8/28/2023, 9:52:06.564 AM",9042,Allow,*,Data Access/Mgmt - Cassandra,*,High-risk Ports,9042,TCP,Low,"InitialAccess,Discovery",0,Static,Hunting
