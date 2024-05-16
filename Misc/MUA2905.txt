@@ -109,3 +109,5 @@ kali
 python
 arch
 parrot
+../..
+/etc/passwd
