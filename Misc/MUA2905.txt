@@ -30,6 +30,7 @@ dotdotpwn
 email extractor
 fantomBrowser
 fantomCrew
+fasthttp
 fhscan
 FHScan Core
 fhscan core 1.
