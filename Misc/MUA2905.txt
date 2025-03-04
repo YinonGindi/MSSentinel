@@ -9,6 +9,7 @@ AllSubmitter
 arachni/
 autogetcontent
 axios
+azurehound
 BackDoorBot
 BFAC
 BigCliqueBOT
