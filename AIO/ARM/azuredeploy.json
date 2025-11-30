@@ -47,7 +47,7 @@
             "metadata": {
                 "description": "The location of resources"
             },
-            "defaultValue": "https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/AIO"
+            "defaultValue": "https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/AIO/ARM"
         }
     }
     "resources": [
@@ -55,14 +55,11 @@
             "type": "Microsoft.Resources/deployments",
             "name": "settings",
             "apiVersion": "2020-06-01",
-            "dependsOn": [
-                "workspaceCreation"
-            ],
             "resourceGroup": "[parameters('rgName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'AIO/LinkedTemplates/settings.json')]",
+                    "uri": "[uri(parameters('_artifactsLocation'), '/LinkedTemplates/settings.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
