@@ -29,17 +29,15 @@
             },
             {
                 "name": "workspaceName",
-                "type": "Microsoft.Common.TextBox",
+                "type": "Microsoft.Solutions.ResourceSelector",
                 "label": "Workspace Name",
-                "placeholder": "LA-<CustomerName>-Sentinel",
-                "defaultValue": "",
-                "toolTip": "The Workspace name should include 4-63 letters and '-'. The '-' shouldn't be the first or the last symbol.",
-                "constraints": {
-                    "required": true,
-                    "regex": "^LA-[A-Za-z][A-Za-z-]+[A-Za-z]-Sentinel$",
-                    "validationMessage": "Only alphanumeric characters are allowed, the text should look like: LA-<CustomerName>-Sentinel and the value must be 1-30 characters long."
-                },
-                "visible": true
+                "resourceType": "Microsoft.OperationalInsights/workspaces",
+                "options": {
+                    "filter": {
+                        "subscription": "onBasics",
+                        "location": "onBasics"
+                    }
+                }
             }
           ],
           "steps": [
