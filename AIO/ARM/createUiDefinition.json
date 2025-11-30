@@ -30,7 +30,7 @@
             {
                 "name": "workspaceName",
                 "type": "Microsoft.Solutions.ResourceSelector",
-                "label": "Workspace Name",
+                "label": "Workspace Name55",
                 "resourceType": "Microsoft.OperationalInsights/workspaces",
                 "options": {
                     "filter": {
