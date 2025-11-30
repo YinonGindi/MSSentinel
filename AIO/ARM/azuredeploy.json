@@ -14,40 +14,6 @@
                 "description": "Name for the Log Analytics workspace"
             }
         },
-        "pricingTier": {
-            "type": "string",
-            "metadata": {
-                "description": "Pricing tier: pergb2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
-            },
-            "allowedValues": [
-                "CapacityReservation",
-                "Free",
-                "LACluster",
-                "PerGB2018",
-                "PerNode",
-                "Premium",
-                "Standalone",
-                "Standard"
-            ],
-            "defaultValue": "PerGB2018"
-        },
-        "capacityReservation": {
-            "type": "int",
-            "metadata": {
-                "description": "Commitment tier"
-            },
-            "allowedValues": [
-                100,
-                200,
-                300,
-                400,
-                500,
-                1000,
-                2000,
-                5000
-            ],
-            "defaultValue": 100
-        },
         "enableDataConnectors": {
             "type": "array",
             "metadata": {
@@ -61,28 +27,6 @@
                 "description": "Severity levels desired for Analytics Rules"
             },
             "defaultValue": []
-        },
-        "dailyQuota": {
-            "type": "int",
-            "metadata": {
-                "description": "Daily ingestion limit in GBs. This limit doesn't apply to the following tables: SecurityAlert, SecurityBaseline, SecurityBaselineSummary, SecurityDetection, SecurityEvent, WindowsFirewall, MaliciousIPCommunication, LinuxAuditLog, SysmonEvent, ProtectionStatus, WindowsEvent"
-            }
-        },
-        "dataRetention": {
-            "type": "int",
-            "minValue": 7,
-            "maxValue": 730,
-            "metadata": {
-                "description": "Number of days of retention. Workspaces in the legacy Free pricing tier can only have 7 days."
-            },
-            "defaultValue": 90
-        },
-        "immediatePurgeDataOn30Days": {
-            "type": "bool",
-            "metadata": {
-                "description": "If set to true when changing retention to 30 days, older data will be immediately deleted. Use this with extreme caution. This only applies when retention is being set to 30 days."
-            },
-            "defaultValue": false
         },
         "aadStreams": {
             "type": "array",
@@ -105,58 +49,8 @@
             },
             "defaultValue": "https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/AIO"
         }
-    },
-    "variables": {
-        "mspRegistrationName": "[guid(parameters('mspOfferName'))]",
-        "mspAssignmentName": "[guid(parameters('mspOfferName'))]"
-    },
+    }
     "resources": [
-        {
-            "type": "Microsoft.Resources/resourceGroups",
-            "apiVersion": "2020-06-01",
-            "name": "[parameters('rgName')]",
-            "location": "[parameters('location')]",
-            "properties": {}
-        },
-        {
-            "name": "workspaceCreation",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-06-01",
-            "dependsOn": [
-                "[resourceId('Microsoft.Resources/resourceGroups',parameters('rgName'))]"
-            ],
-            "resourceGroup": "[parameters('rgName')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), 'AIO/LinkedTemplates/workspace.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "workspaceName": {
-                        "value": "[parameters('workspaceName')]"
-                    },
-                    "pricingTier": {
-                        "value": "[parameters('pricingTier')]"
-                    },
-                    "dailyQuota": {
-                        "value": "[parameters('dailyQuota')]"
-                    },
-                    "dataRetention": {
-                        "value": "[parameters('dataRetention')]"
-                    },
-                    "immediatePurgeDataOn30Days": {
-                        "value": "[parameters('immediatePurgeDataOn30Days')]"
-                    },
-                    "capacityReservation": {
-                        "value": "[parameters('capacityReservation')]"
-                    },
-                    "location": {
-                        "value": "[parameters('location')]"
-                    }
-                }
-            }
-        },
         {
             "type": "Microsoft.Resources/deployments",
             "name": "settings",
