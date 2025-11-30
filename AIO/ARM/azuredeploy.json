@@ -49,7 +49,7 @@
             },
             "defaultValue": "https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/AIO/ARM"
         }
-    }
+    },
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
