@@ -26,8 +26,14 @@
                 "constraints": {
                     "required": true
                 }
-            },
-            {
+            }
+          ],
+          "steps": [
+          {
+              "name": "solutions",
+              "label": "Content Hub Solutions",
+              "elements": [
+                          {
                 "name": "workspaceName",
                 "type": "Microsoft.Solutions.ResourceSelector",
                 "label": "Workspace Name55",
@@ -38,9 +44,9 @@
                         "location": "onBasics"
                     }
                 }
+                              ]
             }
-          ],
-          "steps": [
+          },
           {
               "name": "solutions",
               "label": "Content Hub Solutions",
