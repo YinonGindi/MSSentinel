@@ -238,6 +238,7 @@
             "enableDataConnectors": "[steps('dataConnectors').enableDataConnectors]",
             "enableScheduledAlerts": "[steps('analyticsRules').enableScheduledAlerts]",
             "severityLevels": "[steps('analyticsRules').severityLevels]",
+            "location": "[location()]",
             "rgName": "[basics('rgName')]"
         }
     }
