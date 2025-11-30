@@ -35,7 +35,7 @@ Microsoft Sentinel All-in-One automates the following tasks:
 
 ## Try it now!
 
-<p align="center"><a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FAIO%2ARM%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FAIO%2ARM%2FcreateUiDefinition.json"><img src="https://aka.ms/deploytoazurebutton"></a></p>
+<p align="center"><a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FAIO%2FARM%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FAIO%2FARM%2FcreateUiDefinition.json"><img src="https://aka.ms/deploytoazurebutton"></a></p>
 
 ## Supported connectors
 
