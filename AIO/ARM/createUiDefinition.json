@@ -40,43 +40,6 @@
                     "validationMessage": "Only alphanumeric characters are allowed, the text should look like: LA-<CustomerName>-Sentinel and the value must be 1-30 characters long."
                 },
                 "visible": true
-            },
-            {
-                "name": "dataRetention",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Number of days of retention",
-                "placeholder": "",
-                "defaultValue": "90",
-                "toolTip": "Only numbers allowed. 90 days are free with Sentinel",
-                "constraints": {
-                    "required": true,
-                    "regex": "([3-8][0-9]|9[0-9]|[1-6][0-9]{2}|7[0-2][0-9]|730)",
-                    "validationMessage": "Retention must be between 30 and 730 days."
-                },
-                "visible": true
-            },
-            {
-                "name": "pricingTier",
-                "type": "Microsoft.Common.DropDown",
-                "label": "Select pricing tier for Sentinel and Log Analytics",
-                "placeholder": "",
-                "multiselect": false,
-                "toolTip": "Visit [Azure Monitor Pricing page](https://azure.microsoft.com/pricing/details/monitor/) for more information.",
-                "defaultValue": [{"value": "PerGB2018"}],
-                "constraints": {
-                    "allowedValues": [
-                        {
-                            "label": "Pay-as-you-go",
-                            "value": "PerGB2018"
-                        },
-                        {
-                            "label": "Commitment Tier",
-                            "value": "CapacityReservation"
-                        }
-                    ],
-                    "required": true
-                },
-                "visible": true
             }
           ],
           "steps": [
