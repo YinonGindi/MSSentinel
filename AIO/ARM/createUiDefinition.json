@@ -30,7 +30,7 @@
     ],
     "steps": [
       {
-        "name": "solutions",
+        "name": "workspaceSelection",
         "label": "Content Hub Solutions",
         "elements": [
           {
@@ -283,7 +283,7 @@
       }
     ],
     "outputs": {
-      "workspaceName": "[basics('workspaceName')]",
+      "workspaceName": "[steps('workspaceSelection').workspaceName]",
       "enableDataConnectors": "[steps('dataConnectors').enableDataConnectors]",
       "enableScheduledAlerts": "[steps('analyticsRules').enableScheduledAlerts]",
       "severityLevels": "[steps('analyticsRules').severityLevels]",
