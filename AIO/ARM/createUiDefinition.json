@@ -20,17 +20,12 @@
         "basics": [
             {
                 "name": "rgName",
-                "type": "Microsoft.Common.TextBox",
+                "type": "Microsoft.Solutions.ResourceGroupSelector",
                 "label": "Resource Group name",
-                "placeholder": "RG-<CustomerName>-Sentinel",
-                "defaultValue": "",
-                "toolTip": "Enter a resource group name.",
-                "constraints": {
-                    "required": true,
-                    "regex": "^RG-[A-Za-z][A-Za-z-]+[A-Za-z]-Sentinel$",
-                    "validationMessage": "Only alphanumeric characters are allowed, the text should look like: RG-<CustomerName>-Sentinel and the value must be 1-30 characters long."
-                },
-                "visible": true  
+                    "toolTip": "Select a storage account from the available list.",
+  "constraints": {
+    "required": true
+  }
             },
             {
                 "name": "workspaceName",
