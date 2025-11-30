@@ -235,12 +235,7 @@
         ],
         "outputs": {
             "workspaceName": "[basics('workspaceName')]",
-            "dailyQuota": "[basics('dailyQuota')]",
-            "dataRetention": "[basics('dataRetention')]",
-            "pricingTier": "[basics('pricingTier')]",
-            "capacityReservation": "[basics('capacityReservation')]",
             "enableDataConnectors": "[steps('dataConnectors').enableDataConnectors]",
-            "location": "[location()]",
             "enableScheduledAlerts": "[steps('analyticsRules').enableScheduledAlerts]",
             "severityLevels": "[steps('analyticsRules').severityLevels]",
             "rgName": "[basics('rgName')]"
