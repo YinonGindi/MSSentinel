@@ -1,152 +1,48 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-  "handler": "Microsoft.Azure.CreateUIDef",
-  "version": "0.1.2-preview",
-  "parameters": {
-    "basics": [
-      {
-        "name": "solutionName",
-        "type": "Microsoft.Common.TextBox",
-        "label": "Solution Name",
-        "defaultValue": "Sentinel-All-In-One",
-        "toolTip": "Name for the solution deployment",
-        "visible": false
-      }
-    ],
-    "steps": [
-      {
-        "name": "sentinelSettings",
-        "label": "Sentinel Workspace",
-        "subLabel": {
-          "preValidation": "Select your existing Sentinel environment",
-          "postValidation": "Done"
-        },
-        "elements": [
-          {
-            "name": "headerText",
-            "type": "Microsoft.Common.TextBlock",
-            "options": {
-              "text": "Select the existing Log Analytics workspace where Microsoft Sentinel is enabled."
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "config": {
+            "isWizard": false,
+            "basics": {
+                "description": "**Microsoft Sentinel All-In-One** deployment for existing workspace, see more information about this project [here](https://github.com/Azure/Azure-Sentinel/Tools/Sentinel-All-In-One/).",
+                "location": {
+                    "label": "Location",
+                    "toolTip": "Location for all resources",
+                    "resourceTypes": [
+                        "Microsoft.OperationalInsights/workspaces"
+                    ]
+                },
+                "resourceGroup": {
+                    "allowExisting": true
+                }
             }
-          },
-          {
-            "name": "workspace",
-            "type": "Microsoft.Solutions.ResourceSelector",
-            "label": "Sentinel Workspace",
-            "resourceType": "Microsoft.OperationalInsights/workspaces",
-            "options": {
-              "filter": {
-                "subscriptionOn": "onBasics",
-                "resourceGroupOn": "onBasics"
-              }
+        },
+        "basics": [
+            {
+                "name": "workspaceSelector",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Select existing Log Analytics workspace",
+                "toolTip": "Select the existing workspace where Microsoft Sentinel is enabled",
+                "constraints": {
+                    "allowedValues": "[map(filter(basics('getLAWorkspace').value, (item) => equals(item.location, location())), (item) => parse(concat('{\"label\":\"', item.name, '\",\"value\":\"', item.id, '\"}')))]",
+                    "required": true
+                },
+                "visible": true
             },
-            "toolTip": "Select the existing workspace to deploy resources to."
-          }
-        ]
-      },
-      {
-        "name": "configuration",
-        "label": "Configuration",
-        "elements": [
-          {
-            "name": "enableUEBA",
-            "type": "Microsoft.Common.CheckBox",
-            "label": "Enable User and Entity Behavior Analytics (UEBA)",
-            "defaultValue": true
-          },
-          {
-            "name": "identityProviders",
-            "type": "Microsoft.Common.CheckBoxGroup",
-            "label": "Identity Providers for UEBA",
-            "visible": "[steps('configuration').enableUEBA]",
-            "constraints": {
-              "min": 1
-            },
-            "options": [
-              {
-                "label": "Azure Active Directory",
-                "value": "AAD"
-              },
-              {
-                "label": "Active Directory (Preview)",
-                "value": "AD"
-              }
-            ],
-            "defaultValue": [
-              "AAD"
-            ]
-          }
-        ]
-      },
-      {
-        "name": "connectors",
-        "label": "Data Connectors",
-        "elements": [
-          {
-            "name": "dataConnectorsList",
-            "type": "Microsoft.Common.Section",
-            "label": "Select Data Connectors to Enable",
-            "elements": [
-              {
-                "name": "selectedConnectors",
-                "type": "Microsoft.Common.CheckBoxGroup",
-                "label": "Connectors",
-                "options": [
-                  { "label": "Azure Activity", "value": "AzureActivity" },
-                  { "label": "Azure Active Directory", "value": "AzureActiveDirectory" },
-                  { "label": "Azure Active Directory Identity Protection", "value": "AzureActiveDirectoryIdentityProtection" },
-                  { "label": "Office 365", "value": "Office365" },
-                  { "label": "Microsoft Defender for Cloud", "value": "AzureSecurityCenter" },
-                  { "label": "Microsoft Defender for Endpoint", "value": "MicrosoftDefenderAdvancedThreatProtection" },
-                  { "label": "Microsoft Defender for Identity", "value": "AzureAdvancedThreatProtection" },
-                  { "label": "Microsoft Cloud App Security", "value": "MicrosoftCloudAppSecurity" },
-                  { "label": "Security Events (Windows)", "value": "SecurityEvents" }
-                ],
-                "defaultValue": [
-                  "AzureActivity",
-                  "AzureActiveDirectory",
-                  "Office365"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "solutions",
-        "label": "Content Hub Solutions",
-        "elements": [
-          {
-            "name": "contentHubList",
-            "type": "Microsoft.Common.Section",
-            "label": "Select Solutions to Install",
-            "elements": [
-              {
-                "name": "selectedSolutions",
-                "type": "Microsoft.Common.CheckBoxGroup",
-                "label": "Solutions",
-                "options": [
-                  { "label": "Azure Activity", "value": "Azure Activity" },
-                  { "label": "Microsoft 365 Defender", "value": "Microsoft 365 Defender" },
-                  { "label": "Sentinel Training (Lab)", "value": "Training" }
-                ],
-                "defaultValue": [
-                  "Azure Activity"
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "outputs": {
-      "location": "[location()]",
-      "workspaceName": "[steps('sentinelSettings').workspace.name]",
-      "workspaceId": "[steps('sentinelSettings').workspace.id]",
-      "enableUEBA": "[steps('configuration').enableUEBA]",
-      "identityProviders": "[steps('configuration').identityProviders]",
-      "dataConnectors": "[steps('connectors').dataConnectorsList.selectedConnectors]",
-      "contentSolutions": "[steps('solutions').contentHubList.selectedSolutions]"
+            {
+                "name": "getLAWorkspace",
+                "type": "Microsoft.Solutions.ArmApiControl",
+                "request": {
+                    "method": "GET",
+                    "path": "[concat(subscription().id, '/providers/Microsoft.OperationalInsights/workspaces?api-version=2021-06-01')]"
+                }
+            }
+        ],
+        "outputs": {
+            "workspaceId": "[basics('workspaceSelector')]",
+            "location": "[location()]"
+        }
     }
-  }
 }
