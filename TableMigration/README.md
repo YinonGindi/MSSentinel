@@ -1,7 +1,3 @@
-Here you go, Yinon — a **GitHub‑ready Markdown file**, clean, structured, and fully formatted.
-
-Just copy‑paste into a `.md` file (e.g., `Copy-LogAnalytics-CustomTable-Schema.md`) and it will render perfectly on GitHub.
-
 ***
 
 # Copy Log Analytics Custom Table Schema Between Workspaces
