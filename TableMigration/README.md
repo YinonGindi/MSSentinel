@@ -1,70 +1,161 @@
-Copy Log Analytics Custom Table Schema Between Workspaces
-PowerShell + ARM REST API (2023‑01‑01‑preview)
-This guide explains how to copy the schema of a custom Log Analytics table (tables ending with _CL) from one Log Analytics Workspace (LAW) to another using PowerShell and the Log Analytics Tables Preview API.
-This approach:
+Here you go, Yinon — a **GitHub‑ready Markdown file**, clean, structured, and fully formatted.
 
-Reads the existing table schema from the source LAW
-Removes reserved system columns
-Recreates the table in the target LAW
-Works fully via ARM REST (required for preview APIs)
-Supports custom tables only
+Just copy‑paste into a `.md` file (e.g., `Copy-LogAnalytics-CustomTable-Schema.md`) and it will render perfectly on GitHub.
 
+***
 
-🔧 Requirements
+# Copy Log Analytics Custom Table Schema Between Workspaces
 
-Azure RBAC: Log Analytics Contributor (minimum)
-You must log in to the same tenant where the LAW exists:
-PowerShellConnect-AzAccount -Tenant "<TENANT-ID>"Show more lines
+### PowerShell + ARM REST API (Preview 2023‑01‑01)
 
-Full Workspace Resource IDs, not workspace GUIDs
-Format:
-/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<LAW>
+This guide explains how to **copy a custom Log Analytics table schema** (e.g., `CustomLogs_CL`) from one Log Analytics Workspace (LAW) to another using **PowerShell + the Log Analytics Tables Preview API**.
 
+It is based on the official schema‑copy pattern provided in Microsoft’s internal auxiliary logs preview documentation.
 
+***
 
+## ✅ What This Script Does
 
-🔁 Variables to Update
-PowerShell$WorkspaceIDExisting = "/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<SOURCE-LAW>"$WorkspaceIDNew      = "/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<TARGET-LAW>"$sourceTable = "CustomLogs_CL"   # table to copy (must end with _CL)$newTable    = $sourceTable       # or set a new name ending in _CLShow more lines
+*   Reads the schema of an existing **custom table** in a source LAW
+*   Removes system‑reserved columns (`TenantId`, `SourceSystem`)
+*   Recreates the same table in a target LAW
+*   Supports `Analytics`, `Basic`, or `Auxiliary` table plans
+*   Uses ARM REST API (required for preview table operations)
 
-🔐 Authentication
-Request an ARM-scoped access token (critical!):
-PowerShell$auth = Get-AzAccessToken -ResourceUrl "https://management.azure.com/"$AuthenticationHeader = @{    "Authorization" = "Bearer $($auth.Token)"    "Content-Type"  = "application/json"}Show more lines
+***
 
-📥 Step 1 — Read schema from source LAW
-PowerShell$tableManagementAPIUrl = "https://management.azure.com$WorkspaceIDExisting/tables/$sourceTable?api-version=2023-01-01-preview"$response = Invoke-RestMethod -Method GET -Uri $tableManagementAPIUrl -Headers $AuthenticationHeader$columns  = $response.properties.schema.columnsShow more lines
+## ⚠️ Requirements
 
-🧹 Step 2 — Remove reserved columns
-PowerShell$columnsToRemove = @("TenantId","SourceSystem")$updatedColumns  = $columns | Where-Object { $columnsToRemove -notcontains $_.name }Show more lines
+*   Azure RBAC: **Log Analytics Contributor** (or higher)
 
-🏗️ Step 3 — Build body for new table
+*   Must authenticate to the **correct tenant**
 
-Use totalRetentionInDays — NOT retentionInDays
-Set plan to: Analytics, Basic, or Auxiliary
+*   Must use **full ARM resource IDs** (not workspace GUIDs):
+        /subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<LAW>
 
-PowerShell$bodyObject = @{    properties = @{        schema = @{            name    = $newTable            columns = $updatedColumns        }        plan                = "Analytics"        totalRetentionInDays = 90    }}$body = $bodyObject | ConvertTo-Json -Depth 6Show more lines
+*   Custom table names **must end with** `_CL`
 
-📤 Step 4 — Create new table in target LAW
-PowerShell$newTableUrl = "https://management.azure.com$WorkspaceIDNew/tables/$newTable?api-version=2023-01-01-preview"$result = Invoke-RestMethod -Method PUT -Uri $newTableUrl -Headers $AuthenticationHeader -Body $body -ContentType "application/json"Show more lines
+***
 
-✅ Validation
-List tables:
-PowerShellInvoke-RestMethod -Method GET `  -Uri "https://management.azure.com$WorkspaceIDNew/tables?api-version=2023-01-01-preview" `  -Headers $AuthenticationHeaderShow more lines
-Get the created table schema:
-PowerShellInvoke-RestMethod -Method GET `  -Uri "https://management.azure.com$WorkspaceIDNew/tables/$newTable?api-version=2023-01-01-preview" `  -Headers $AuthenticationHeaderShow more lines
+## 🔧 Variables to Update
 
-❗ Common Fixes
-InvalidAuthenticationToken
+```powershell
+$WorkspaceIDExisting = "/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<SOURCE-LAW>"
+$WorkspaceIDNew      = "/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<TARGET-LAW>"
 
-Wrong tenant
-→ Connect-AzAccount -Tenant <TENANT-ID>
-Wrong token scope
-→ must use:
-Get-AzAccessToken -ResourceUrl "https://management.azure.com/"
-WorkspaceID missing /subscriptions/... prefix
+$sourceTable = "CustomLogs_CL"    # Must end with _CL
+$newTable    = $sourceTable       # Change if you want a different name
+```
 
-400 BadRequest
+***
 
-Table name missing _CL
-Using retentionInDays instead of totalRetentionInDays
-$newTable undefined
-$updatedColumns empty
+## 🔐 Authentication (ARM-scoped token)
+
+```powershell
+$auth = Get-AzAccessToken -ResourceUrl "https://management.azure.com/"
+$AuthenticationHeader = @{
+    "Authorization" = "Bearer $($auth.Token)"
+    "Content-Type"  = "application/json"
+}
+```
+
+***
+
+## 📥 Step 1 — Read Schema From Source LAW
+
+```powershell
+$tableManagementAPIUrl = "https://management.azure.com$WorkspaceIDExisting/tables/$sourceTable?api-version=2023-01-01-preview"
+
+$response = Invoke-RestMethod -Uri $tableManagementAPIUrl -Method GET -Headers $AuthenticationHeader
+
+$columns = $response.properties.schema.columns
+```
+
+***
+
+## 🧹 Step 2 — Remove Reserved Columns
+
+```powershell
+$columnsToRemove = @("TenantId", "SourceSystem")
+$updatedColumns  = $columns | Where-Object { $columnsToRemove -notcontains $_.name }
+```
+
+***
+
+## 🛠️ Step 3 — Build Request Body for New Table
+
+Use **`totalRetentionInDays`** (API requires this), not `retentionInDays`.
+
+```powershell
+$bodyObject = @{
+    properties = @{
+        schema = @{
+            name    = $newTable
+            columns = $updatedColumns
+        }
+        plan = "Analytics"           # OR "Basic" / "Auxiliary"
+        totalRetentionInDays = 90
+    }
+}
+
+$body = $bodyObject | ConvertTo-Json -Depth 6
+```
+
+***
+
+## 📤 Step 4 — Create New Table in Target LAW
+
+```powershell
+$newTableUrl = "https://management.azure.com$WorkspaceIDNew/tables/$newTable?api-version=2023-01-01-preview"
+
+$result = Invoke-RestMethod -Uri $newTableUrl -Method PUT -Headers $AuthenticationHeader -Body $body
+```
+
+***
+
+## 🔎 Validation
+
+### List Tables
+
+```powershell
+$checkUrl = "https://management.azure.com$WorkspaceIDNew/tables?api-version=2023-01-01-preview"
+Invoke-RestMethod -Uri $checkUrl -Method GET -Headers $AuthenticationHeader
+```
+
+### Inspect Created Table
+
+```powershell
+$schemaUrl = "https://management.azure.com$WorkspaceIDNew/tables/$newTable?api-version=2023-01-01-preview"
+Invoke-RestMethod -Uri $schemaUrl -Method GET -Headers $AuthenticationHeader
+```
+
+***
+
+## 🩹 Common Fixes
+
+### ❌ InvalidAuthenticationToken
+
+Likely causes:
+
+*   Wrong tenant in Cloud Shell
+    ```powershell
+    Connect-AzAccount -Tenant <TENANT-ID>
+    ```
+*   Wrong token scope
+    ```powershell
+    Get-AzAccessToken -ResourceUrl "https://management.azure.com/"
+    ```
+*   Workspace ID missing `/subscriptions/...`
+
+***
+
+## ✔️ Summary
+
+You now have a **reliable, GitHub‑ready** Markdown guide for cloning a custom Log Analytics table schema between workspaces using PowerShell.
+
+If you'd like, I can also generate:
+✅ A standalone `.ps1` file  
+✅ A version with diagrams  
+✅ A version with GitHub code badges and TOC
+
+Just tell me!
