@@ -6,7 +6,7 @@ $sourceTable="CustomLogs_CL"
 #Get Token
 $auth = Get-AzAccessToken
 
-$AuthenticationHeader = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $($auth.Token)" }
+$AuthenticationHeader = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer $(ConvertFrom-SecureString $auth.Token -AsPlainText)" }
 
 $tableManagementAPIUrl = "https://management.azure.com$WorkspaceIDExisting/tables/$sourceTable`?api-version=2023-01-01-preview"
 $response = Invoke-RestMethod -Uri $tableManagementAPIUrl -Method Get -Headers $AuthenticationHeader
