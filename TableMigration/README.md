@@ -40,7 +40,6 @@ $WorkspaceIDExisting = "/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Mic
 $WorkspaceIDNew      = "/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<TARGET-LAW>"
 
 $sourceTable = "CustomLogs_CL"    # Must end with _CL
-$newTable    = $sourceTable       # Change if you want a different name
 ```
 
 ***
@@ -80,8 +79,6 @@ $updatedColumns  = $columns | Where-Object { $columnsToRemove -notcontains $_.na
 
 ## 🛠️ Step 3 — Build Request Body for New Table
 
-Use **`totalRetentionInDays`** (API requires this), not `retentionInDays`.
-
 ```powershell
 $bodyObject = @{
     properties = @{
@@ -91,6 +88,7 @@ $bodyObject = @{
         }
         plan = "Analytics"           # OR "Basic" / "Auxiliary"
         totalRetentionInDays = 90
+        retentionInDays=90
     }
 }
 
@@ -144,14 +142,3 @@ Likely causes:
 *   Workspace ID missing `/subscriptions/...`
 
 ***
-
-## ✔️ Summary
-
-You now have a **reliable, GitHub‑ready** Markdown guide for cloning a custom Log Analytics table schema between workspaces using PowerShell.
-
-If you'd like, I can also generate:
-✅ A standalone `.ps1` file  
-✅ A version with diagrams  
-✅ A version with GitHub code badges and TOC
-
-Just tell me!
