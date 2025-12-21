@@ -1,6 +1,6 @@
 #Variable to Configure
-$WorkspaceIDExisting="/subscriptions/00000000-0000-0000-0000-00000000000/resourceGroups/oiautorest6685/providers/Microsoft.OperationalInsights/workspaces/oiautorest6685"
-$WorkspaceIDNew="/subscriptions/00000000-0000-0000-0000-00000000000/resourceGroups/oiautorest6685/providers/Microsoft.OperationalInsights/workspaces/oiautorest6685123123"
+$WorkspaceIDExisting="/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<SOURCE-LAW>"
+$WorkspaceIDNew="/subscriptions/<SUBID>/resourceGroups/<RG>/providers/Microsoft.OperationalInsights/workspaces/<TARGET-LAW>"
 $sourceTable="CustomLogs_CL"
 
 #Get Token
@@ -18,6 +18,6 @@ $updatedColumns = $columns | Where-Object { $columnsToRemove -notcontains $_.nam
 
 $newTableUrl = "https://management.azure.com$WorkspaceIDNew/tables/$sourceTable`?api-version=2023-01-01-preview"
 
-$body = (@{properties=@{schema=@{name=$sourceTable;columns=$updatedColumns};plan="Analytics";retentionInDays=90}} | ConvertTo-Json -Depth 6)
+$body = (@{properties=@{schema=@{name=$sourceTable;columns=$updatedColumns};plan="Analytics";retentionInDays=90;totalRetentionInDays=90}} | ConvertTo-Json -Depth 6)
 
 Invoke-RestMethod -Uri $newTableUrl -Method Put -Headers $AuthenticationHeader -Body $body -ContentType "application/json"
