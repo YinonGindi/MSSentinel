@@ -1,0 +1,118 @@
+{
+  "properties": {
+    "displayName": "Microsoft Defender for AI Services should be enabled",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "Audit to see if Microsoft Defender for AI Services is enabled on the subscription.",
+    "metadata": {
+      "category": "Security Center",
+      "createdBy": "0e8b455c-b0b6-412a-9178-217611345107",
+      "createdOn": "2026-02-24T15:12:32.3732206Z",
+      "updatedBy": null,
+      "updatedOn": null
+    },
+    "version": "1.0.0",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "DeployIfNotExists will enable the AI plan and Data Security."
+        },
+        "allowedValues": [
+          "DeployIfNotExists",
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "DeployIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/pricings",
+          "name": "AI",
+          "existenceScope": "subscription",
+          "roleDefinitionIds": [
+            "/providers/Microsoft.Authorization/roleDefinitions/fb1c8493-542b-48eb-b624-b4c8fea62acd"
+          ],
+          "existenceCondition": {
+            "allOf": [
+              {
+                "field": "Microsoft.Security/pricings/pricingTier",
+                "equals": "Standard"
+              },
+              {
+                "count": {
+                  "field": "Microsoft.Security/pricings/extensions[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Security/pricings/extensions[*].name",
+                        "equals": "SensitiveDataDiscovery"
+                      },
+                      {
+                        "field": "Microsoft.Security/pricings/extensions[*].isEnabled",
+                        "equals": "True"
+                      }
+                    ]
+                  }
+                },
+                "equals": 1
+              }
+            ]
+          },
+          "deployment": {
+            "properties": {
+              "mode": "incremental",
+              "template": {
+                "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "location": "eastus",
+                "resources": [
+                  {
+                    "type": "Microsoft.Security/pricings",
+                    "apiVersion": "2023-01-01",
+                    "name": "AI",
+                    "properties": {
+                      "pricingTier": "Standard",
+                      "extensions": [
+                        {
+                          "name": "SensitiveDataDiscovery",
+                          "isEnabled": "True"
+                        },
+                        {
+                          "name": "AIPromptEvidence",
+                          "isEnabled": "True"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "versions": [
+      "1.0.0"
+    ]
+  },
+  "id": "/providers/microsoft.management/managementgroups/production/providers/Microsoft.Authorization/policyDefinitions/669d630262854ac7a0ff7526",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "name": "669d630262854ac7a0ff7526",
+  "systemData": {
+    "createdBy": "yinongindi@MngEnvMCAP616203.onmicrosoft.com",
+    "createdByType": "User",
+    "createdAt": "2026-02-24T15:12:32.2931281Z",
+    "lastModifiedBy": "yinongindi@MngEnvMCAP616203.onmicrosoft.com",
+    "lastModifiedByType": "User",
+    "lastModifiedAt": "2026-02-24T15:12:32.2931281Z"
+  }
+}
