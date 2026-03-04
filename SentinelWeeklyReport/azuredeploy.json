@@ -1,0 +1,524 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "managedIdentityName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the User-Assigned Managed Identity."
+      }
+    },
+    "managedIdentityResourceGroup": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Resource group of the managed identity (if different from deployment RG)."
+      }
+    },
+    "logicAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Consumption Logic App."
+      }
+    },
+    "automationAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Automation Account."
+      }
+    },
+    "automationAccountResourceGroup": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Resource group of the Automation Account (if different from deployment RG)."
+      }
+    },
+    "runbookName": {
+      "type": "string",
+      "defaultValue": "pocswe",
+      "metadata": {
+        "description": "Name of the PowerShell runbook to execute."
+      }
+    },
+    "subscriptionId": {
+      "type": "string",
+      "defaultValue": "[subscription().subscriptionId]",
+      "metadata": {
+        "description": "Azure Subscription ID."
+      }
+    },
+    "sentinelResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource group containing the Log Analytics workspace."
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Log Analytics workspace name for Sentinel."
+      }
+    },
+    "emailRecipient": {
+      "type": "string",
+      "metadata": {
+        "description": "Email address to send the weekly report to."
+      }
+    },
+    "recurrenceIntervalDays": {
+      "type": "int",
+      "defaultValue": 7,
+      "metadata": {
+        "description": "Recurrence interval in days for the Logic App trigger."
+      }
+    },
+    "recurrenceHour": {
+      "type": "int",
+      "defaultValue": 10,
+      "metadata": {
+        "description": "Hour of the day (0-23) to run the Logic App."
+      }
+    },
+    "recurrenceMinute": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "Minute of the hour (0-59) to run the Logic App."
+      }
+    },
+    "timeZone": {
+      "type": "string",
+      "defaultValue": "Israel Standard Time",
+      "metadata": {
+        "description": "Time zone for the recurrence schedule."
+      }
+    },
+    "connectionsResourceGroup": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Resource group for the API connections."
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "defaultValue": "[deployment().properties.templateLink.uri]",
+      "metadata": {
+        "description": "Base URI where the template and runbook files are located. When deploying from a public GitHub repo, this resolves automatically. For local deployment, provide the raw GitHub URL (e.g., https://raw.githubusercontent.com/OWNER/REPO/main/)."
+      }
+    }
+  },
+  "variables": {
+    "managedIdentityId": "[resourceId(parameters('managedIdentityResourceGroup'), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName'))]",
+    "automationConnectionName": "azureautomation",
+    "monitorLogsConnectionName": "azuremonitorlogs",
+    "office365ConnectionName": "office365",
+    "automationConnectionId": "[resourceId(parameters('connectionsResourceGroup'), 'Microsoft.Web/connections', variables('automationConnectionName'))]",
+    "monitorLogsConnectionId": "[resourceId(parameters('connectionsResourceGroup'), 'Microsoft.Web/connections', variables('monitorLogsConnectionName'))]",
+    "office365ConnectionId": "[resourceId(parameters('connectionsResourceGroup'), 'Microsoft.Web/connections', variables('office365ConnectionName'))]",
+    "automationManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'azureautomation')]",
+    "monitorLogsManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'azuremonitorlogs')]",
+    "office365ManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'office365')]",
+    "sentinelReaderRoleId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ab8e14d6-4a74-4a29-9ba8-549422addade')]",
+    "workspaceId": "[resourceId(parameters('sentinelResourceGroup'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2023-01-31",
+      "name": "[parameters('managedIdentityName')]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('workspaceId'), variables('sentinelReaderRoleId'), variables('managedIdentityId'))]",
+      "scope": "[variables('workspaceId')]",
+      "dependsOn": [
+        "[variables('managedIdentityId')]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[variables('sentinelReaderRoleId')]",
+        "principalId": "[reference(variables('managedIdentityId')).principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2023-11-01",
+      "name": "[parameters('automationAccountName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('managedIdentityId')]"
+      ],
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[variables('managedIdentityId')]": {}
+        }
+      },
+      "properties": {
+        "sku": {
+          "name": "Basic"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/runbooks",
+      "apiVersion": "2023-11-01",
+      "name": "[concat(parameters('automationAccountName'), '/', parameters('runbookName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccountName'))]"
+      ],
+      "properties": {
+        "runbookType": "PowerShell",
+        "logVerbose": false,
+        "logProgress": false,
+        "logActivityTrace": 0,
+        "description": "Checks Microsoft Sentinel Content Hub for solutions requiring updates and generates an HTML report.",
+        "publishContentLink": {
+          "uri": "[uri(parameters('_artifactsLocation'), 'Get-SentinelContentUpdates.ps1')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "[variables('automationConnectionName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('managedIdentityId')]"
+      ],
+      "properties": {
+        "displayName": "azureautomation",
+        "api": {
+          "id": "[variables('automationManagedApiId')]"
+        },
+        "parameterValueType": "Alternative"
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "[variables('monitorLogsConnectionName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('managedIdentityId')]"
+      ],
+      "properties": {
+        "displayName": "azuremonitorlogs",
+        "api": {
+          "id": "[variables('monitorLogsManagedApiId')]"
+        },
+        "parameterValueType": "Alternative"
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "[variables('office365ConnectionName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "displayName": "office365",
+        "api": {
+          "id": "[variables('office365ManagedApiId')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections/accessPolicies",
+      "apiVersion": "2016-06-01",
+      "name": "[concat(variables('automationConnectionName'), '/', parameters('logicAppName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('automationConnectionName'))]",
+        "[variables('managedIdentityId')]"
+      ],
+      "properties": {
+        "principal": {
+          "type": "ActiveDirectory",
+          "identity": {
+            "tenantId": "[reference(variables('managedIdentityId')).tenantId]",
+            "objectId": "[reference(variables('managedIdentityId')).principalId]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections/accessPolicies",
+      "apiVersion": "2016-06-01",
+      "name": "[concat(variables('monitorLogsConnectionName'), '/', parameters('logicAppName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('monitorLogsConnectionName'))]",
+        "[variables('managedIdentityId')]"
+      ],
+      "properties": {
+        "principal": {
+          "type": "ActiveDirectory",
+          "identity": {
+            "tenantId": "[reference(variables('managedIdentityId')).tenantId]",
+            "objectId": "[reference(variables('managedIdentityId')).principalId]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[parameters('logicAppName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('managedIdentityId')]",
+        "[resourceId('Microsoft.Web/connections', variables('automationConnectionName'))]",
+        "[resourceId('Microsoft.Web/connections', variables('monitorLogsConnectionName'))]",
+        "[resourceId('Microsoft.Web/connections', variables('office365ConnectionName'))]"
+      ],
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[variables('managedIdentityId')]": {}
+        }
+      },
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "triggers": {
+            "Recurrence": {
+              "type": "Recurrence",
+              "recurrence": {
+                "interval": "[parameters('recurrenceIntervalDays')]",
+                "frequency": "Day",
+                "schedule": {
+                  "hours": [ "[parameters('recurrenceHour')]" ],
+                  "minutes": [ "[parameters('recurrenceMinute')]" ]
+                },
+                "timeZone": "[parameters('timeZone')]"
+              },
+              "evaluatedRecurrence": {
+                "interval": "[parameters('recurrenceIntervalDays')]",
+                "frequency": "Day",
+                "schedule": {
+                  "hours": [ "[parameters('recurrenceHour')]" ],
+                  "minutes": [ "[parameters('recurrenceMinute')]" ]
+                },
+                "timeZone": "[parameters('timeZone')]"
+              }
+            }
+          },
+          "actions": {
+            "Create_job": {
+              "runAfter": {},
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azureautomation']['connectionId']"
+                  }
+                },
+                "method": "put",
+                "body": {
+                  "properties": {
+                    "parameters": {
+                      "subscriptionid": "@parameters('SubscriptionId')",
+                      "ResourceGroupName": "@parameters('ResourceGroup')",
+                      "WorkspaceName": "@parameters('WorkspaceName')"
+                    }
+                  }
+                },
+                "path": "[concat('/subscriptions/@{encodeURIComponent(''', parameters('subscriptionId'), ''')}/resourceGroups/@{encodeURIComponent(''', parameters('automationAccountResourceGroup'), ''')}/providers/Microsoft.Automation/automationAccounts/@{encodeURIComponent(''', parameters('automationAccountName'), ''')}/jobs')]",
+                "queries": {
+                  "x-ms-api-version": "2015-10-31",
+                  "runbookName": "[parameters('runbookName')]",
+                  "wait": false
+                }
+              }
+            },
+            "Delay": {
+              "runAfter": {
+                "Create_job": [ "Succeeded" ]
+              },
+              "type": "Wait",
+              "inputs": {
+                "interval": {
+                  "count": 150,
+                  "unit": "Second"
+                }
+              }
+            },
+            "Get_job_output": {
+              "runAfter": {
+                "Delay": [ "Succeeded" ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azureautomation']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "[concat('/subscriptions/@{encodeURIComponent(''', parameters('subscriptionId'), ''')}/resourceGroups/@{encodeURIComponent(''', parameters('automationAccountResourceGroup'), ''')}/providers/Microsoft.Automation/automationAccounts/@{encodeURIComponent(''', parameters('automationAccountName'), ''')}/jobs/@{encodeURIComponent(body(''Create_job'')?[''properties'']?[''jobId''])}/output')]",
+                "queries": {
+                  "x-ms-api-version": "2015-10-31"
+                }
+              }
+            },
+            "Run_query_and_list_results_V2": {
+              "runAfter": {},
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azuremonitorlogs']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "query": "let CurrentWeekStart = startofweek(now());\nlet PreviousWeekStart = startofweek(now()) - 7d;\nlet CurrentWeek=Usage\n    | where TimeGenerated >= CurrentWeekStart\n    | where IsBillable == true\n    | summarize CurrentGB = round(sum(Quantity) / 1024, 2) by DataType\n| extend x=1\n| as T\n| join kind=inner (\n       T\n       | summarize WeekTotalGB = sum(CurrentGB),x=1\n   ) on x\n   | project-away x*   \n| extend PercentOfTotal = round(CurrentGB / WeekTotalGB * 100, 2)\n| join kind=fullouter (Usage\n    | where TimeGenerated >= PreviousWeekStart and TimeGenerated < CurrentWeekStart\n    | where IsBillable == true\n    | summarize PreviousGB = round(sum(Quantity) / 1024, 2) by DataType\n    ) on DataType\n| extend DataType = coalesce(DataType, DataType1)\n| extend CurrentGB = coalesce(CurrentGB, 0.0), PreviousGB = coalesce(PreviousGB, 0.0)\n| extend ChangeGB = round(CurrentGB - PreviousGB, 2)\n| extend ChangePercent = iff(PreviousGB > 0, round((CurrentGB - PreviousGB) / PreviousGB * 100, 2), 0.0)\n| where CurrentGB != 0 and PreviousGB != 0\n| project Table=DataType, ['Previous Week (GB)']=PreviousGB,['Current Week (GB)']= CurrentGB, ['Change (GB)']=ChangeGB,['Change Percent']=strcat(ChangePercent,'%'),['Total Percent']=strcat(PercentOfTotal,'%');\nCurrentWeek\n| union  (CurrentWeek | summarize ['Current Week (GB)']=sum(['Current Week (GB)']),['Previous Week (GB)']=sum(['Previous Week (GB)']),Table=' Total GB Current Week'\n| extend ['Change (GB)'] = round(['Current Week (GB)'] - ['Previous Week (GB)'], 2)\n| extend ['Change Percent'] = iff(['Previous Week (GB)'] > 0, round((['Current Week (GB)'] - ['Previous Week (GB)']) / ['Previous Week (GB)'] * 100, 2), 0.0)\n| extend ['Change Percent']= strcat(['Change Percent'],'%'))\n| order by ['Current Week (GB)'] desc",
+                  "timerangetype": "3"
+                },
+                "path": "/queryDataV2",
+                "queries": {
+                  "subscriptions": "@parameters('SubscriptionId')",
+                  "resourcegroups": "@parameters('ResourceGroup')",
+                  "resourcetype": "Log Analytics Workspace",
+                  "resourcename": "@parameters('WorkspaceName')"
+                }
+              }
+            },
+            "Create_HTML_table": {
+              "runAfter": {
+                "Run_query_and_list_results_V2": [ "Succeeded" ]
+              },
+              "type": "Table",
+              "inputs": {
+                "from": "@skip(body('Run_query_and_list_results_V2')?['value'],1)",
+                "format": "HTML"
+              }
+            },
+            "Initialize_variables": {
+              "runAfter": {
+                "Create_HTML_table": [ "Succeeded" ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "HTMLBody",
+                    "type": "string",
+                    "value": "@{substring(body('Create_HTML_table'), 0, sub(length(body('Create_HTML_table')), 8))}\n<tr><th>@{first(body('Run_query_and_list_results_V2')?['value'])?['Table']}</th>\n<th>@{first(body('Run_query_and_list_results_V2')?['value'])?['Previous Week (GB)']}</th>\n<th>@{first(body('Run_query_and_list_results_V2')?['value'])?['Current Week (GB)']}</th>\n<th>@{first(body('Run_query_and_list_results_V2')?['value'])?['Change (GB)']}</th>\n<th>@{first(body('Run_query_and_list_results_V2')?['value'])?['Change Percent']}</th>\n<th>@{first(body('Run_query_and_list_results_V2')?['value'])?['Total Percent']}</th></tr></table>"
+                  }
+                ]
+              }
+            },
+            "Send_an_email_(V2)": {
+              "runAfter": {
+                "Get_job_output": [ "Succeeded" ],
+                "Initialize_variables": [ "Succeeded" ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['office365']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "To": "[parameters('emailRecipient')]",
+                  "Subject": "Microsoft Sentinel Content Hub Updates",
+                  "Body": "<style>\nbody { font-family: Segoe UI, Arial, sans-serif; font-size: 14px; color: #333; }.\nh1 { color: #0066cc; }\nh2 { color: #0078D4; margin-bottom: 4px; }\ntable { border-collapse: collapse; width: 100%; margin-top: 10px; }\nth { background-color: #0078D4; color: #fff; padding: 10px 12px; text-align: left; }\ntd { padding: 8px 12px; border-bottom: 1px solid #ddd; }\ntr:nth-child(even) { background-color: #f5f5f5; }\n.summary { margin: 20px 0; padding: 10px; background-color: #f0f8ff; border-left: 5px solid #0066cc; }\n</style>\n\n<h1>Microsoft Sentinel Weekly Report</h1>\n<div class=\"summary\">\n<p>Sentinel Workspace Name: @{parameters('WorkspaceName')}</p>\n<p>Report Generated: @{\nformatDateTime(\n  convertTimeZone(utcNow(), 'UTC','Israel Standard Time'),\n  'HH:mm:ss dd-MM-yyyy'\n)\n}</p>\n</div>\n<h2>\ud83d\udcca Weekly Ingestion Report</h2>\n<p>Comparison of current week vs. previous week.</p>\n@{variables('HTMLBody')}\n<br>\n@{body('Get_job_output')}",
+                  "Importance": "Normal"
+                },
+                "path": "/v2/Mail"
+              }
+            }
+          },
+          "outputs": {},
+          "parameters": {
+            "SubscriptionId": {
+              "defaultValue": "[parameters('subscriptionId')]",
+              "type": "String"
+            },
+            "ResourceGroup": {
+              "defaultValue": "[parameters('sentinelResourceGroup')]",
+              "type": "String"
+            },
+            "WorkspaceName": {
+              "defaultValue": "[parameters('workspaceName')]",
+              "type": "String"
+            },
+            "$connections": {
+              "type": "Object",
+              "defaultValue": {}
+            }
+          }
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "azureautomation": {
+                "id": "[variables('automationManagedApiId')]",
+                "connectionId": "[variables('automationConnectionId')]",
+                "connectionName": "[variables('automationConnectionName')]",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity",
+                    "identity": "[variables('managedIdentityId')]"
+                  }
+                }
+              },
+              "azuremonitorlogs": {
+                "id": "[variables('monitorLogsManagedApiId')]",
+                "connectionId": "[variables('monitorLogsConnectionId')]",
+                "connectionName": "[variables('monitorLogsConnectionName')]",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity",
+                    "identity": "[variables('managedIdentityId')]"
+                  }
+                }
+              },
+              "office365": {
+                "id": "[variables('office365ManagedApiId')]",
+                "connectionId": "[variables('office365ConnectionId')]",
+                "connectionName": "[variables('office365ConnectionName')]",
+                "connectionProperties": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "managedIdentityPrincipalId": {
+      "type": "string",
+      "value": "[reference(variables('managedIdentityId')).principalId]"
+    },
+    "managedIdentityClientId": {
+      "type": "string",
+      "value": "[reference(variables('managedIdentityId')).clientId]"
+    },
+    "logicAppId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
+    },
+    "automationAccountId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccountName'))]"
+    }
+  }
+}
