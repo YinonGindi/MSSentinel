@@ -21,7 +21,7 @@
       "value": "Prod"
     },
     "runbookName": {
-      "value": "pocswe"
+      "value": "Get-SentinelContentUpdates"
     },
     "sentinelResourceGroup": {
       "value": "Prod"
