@@ -1,8 +1,6 @@
 # ARM Template: Sentinel Weekly Report — Logic App + Managed Identity + Automation Account
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FOWNER%2FREPO%2Fmain%2Fazuredeploy.json)
-
-> **⚠️ Update the Deploy to Azure button URL above** — replace `OWNER/REPO` with your actual GitHub username and repository name.
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FSentinelWeeklyReport%2Fazuredeploy.json)
 
 Deploys the full **Microsoft Sentinel Weekly Report** infrastructure via a single ARM template.
 
@@ -57,15 +55,15 @@ Click the **Deploy to Azure** button at the top of this README. It opens the Azu
 ```bash
 az deployment group create \
   --resource-group Sentinel-ContentUpdates_group \
-  --template-uri https://raw.githubusercontent.com/OWNER/REPO/main/azuredeploy.json \
+  --template-uri https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/SentinelWeeklyReport/azuredeploy.json \
   --parameters @azuredeploy.parameters.json
 ```
 
 ### Option 3: PowerShell Script (local clone)
 
 ```powershell
-git clone https://github.com/OWNER/REPO.git
-cd REPO
+git clone https://github.com/YinonGindi/MSSentinel.git
+cd MSSentinel\SentinelWeeklyReport
 .\deploy.ps1 -ResourceGroupName "Sentinel-ContentUpdates_group" -Location "israelcentral"
 ```
 
@@ -74,7 +72,7 @@ cd REPO
 ```powershell
 New-AzResourceGroupDeployment `
   -ResourceGroupName "Sentinel-ContentUpdates_group" `
-  -TemplateUri "https://raw.githubusercontent.com/OWNER/REPO/main/azuredeploy.json" `
+  -TemplateUri "https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/SentinelWeeklyReport/azuredeploy.json" `
   -TemplateParameterFile "azuredeploy.parameters.json"
 ```
 
