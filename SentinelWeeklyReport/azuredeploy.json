@@ -11,7 +11,6 @@
     },
     "managedIdentityName": {
       "type": "string",
-      "defaultValue": "ManagedIdentity-SentinelUpdates",
       "metadata": {
         "description": "Name of the User-Assigned Managed Identity."
       }
@@ -216,7 +215,8 @@
         "displayName": "azureautomation",
         "api": {
           "id": "[variables('automationManagedApiId')]"
-        }
+        },
+        "parameterValueType": "Alternative"
       }
     },
     {
@@ -493,4 +493,3 @@
     }
   }
 }
-
