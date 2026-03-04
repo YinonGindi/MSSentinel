@@ -19,22 +19,10 @@
         "label": "Sentinel Configuration",
         "elements": [
           {
-            "name": "sentinelResourceGroup",
-            "type": "Microsoft.Solutions.ResourceSelector",
-            "label": "Sentinel Resource Group",
-            "toolTip": "Select the resource group containing the Log Analytics workspace.",
-            "resourceType": "Microsoft.Resources/resourceGroups",
-            "options": {
-              "filter": {
-                "subscription": "onBasics"
-              }
-            }
-          },
-          {
             "name": "workspaceName",
             "type": "Microsoft.Solutions.ResourceSelector",
             "label": "Log Analytics Workspace",
-            "toolTip": "Select the Log Analytics workspace for Sentinel.",
+            "toolTip": "Select the Log Analytics workspace for Sentinel. The resource group is derived automatically.",
             "resourceType": "Microsoft.OperationalInsights/workspaces",
             "options": {
               "filter": {
@@ -210,7 +198,7 @@
       "automationAccountResourceGroup": "[if(empty(steps('automation').automationAccountResourceGroup.name), resourceGroup().name, steps('automation').automationAccountResourceGroup.name)]",
       "runbookName": "[steps('automation').runbookName]",
       "subscriptionId": "[subscription().subscriptionId]",
-      "sentinelResourceGroup": "[steps('sentinel').sentinelResourceGroup.name]",
+      "sentinelResourceGroup": "[last(take(split(steps('sentinel').workspaceName.id, '/'), 5))]",
       "workspaceName": "[steps('sentinel').workspaceName.name]",
       "emailRecipient": "[steps('sentinel').emailRecipient]",
       "connectionsResourceGroup": "[if(empty(steps('logicApp').connectionsResourceGroup.name), resourceGroup().name, steps('logicApp').connectionsResourceGroup.name)]",
