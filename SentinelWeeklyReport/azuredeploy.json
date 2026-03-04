@@ -225,14 +225,14 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('monitorLogsConnectionName')]",
       "location": "[parameters('location')]",
-      "kind": "V2",
+      "kind": "shared",
       "properties": {
         "displayName": "azuremonitorlogs",
         "api": {
           "id": "[variables('monitorLogsManagedApiId')]"
         },
         "parameterValueSet": {
-          "name": "oauthMI",
+          "name": "managedIdentityAuth",
           "values": {}
         }
       }
@@ -499,3 +499,4 @@
     }
   }
 }
+
