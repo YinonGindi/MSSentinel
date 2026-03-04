@@ -1,6 +1,6 @@
 # ARM Template: Sentinel Weekly Report — Logic App + Managed Identity + Automation Account
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FSentinelWeeklyReport%2Fazuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FSentinelWeeklyReport%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FSentinelWeeklyReport%2FcreateUiDefinition.json)
 
 Deploys the full **Microsoft Sentinel Weekly Report** infrastructure via a single ARM template.
 
@@ -11,7 +11,7 @@ Deploys the full **Microsoft Sentinel Weekly Report** infrastructure via a singl
 | **User-Assigned Managed Identity** | `Microsoft.ManagedIdentity/userAssignedIdentities` | Shared identity for Logic App and Automation Account |
 | **Sentinel Reader Role Assignment** | `Microsoft.Authorization/roleAssignments` | Assigns Microsoft Sentinel Reader to the managed identity on the workspace |
 | **Automation Account** | `Microsoft.Automation/automationAccounts` | Basic SKU, runs PowerShell runbook |
-| **Runbook — pocswe** | `Microsoft.Automation/automationAccounts/runbooks` | Checks Sentinel Content Hub for solution updates |
+| **Runbook — Get-SentinelContentUpdates** | `Microsoft.Automation/automationAccounts/runbooks` | Checks Sentinel Content Hub for solution updates |
 | **API Connection — Azure Automation** | `Microsoft.Web/connections` | Managed identity auth |
 | **API Connection — Azure Monitor Logs** | `Microsoft.Web/connections` | Managed identity auth |
 | **API Connection — Office 365** | `Microsoft.Web/connections` | For sending email reports |
@@ -41,8 +41,9 @@ The Logic App runs weekly (configurable) and:
 |------|-------------|
 | `azuredeploy.json` | Main ARM template with all resources |
 | `azuredeploy.parameters.json` | Parameters file — **edit resource names here** |
+| `createUiDefinition.json` | Azure Portal UI definition — dropdowns for resource groups & workspaces |
 | `deploy.ps1` | PowerShell deployment script |
-| `pocswe.ps1` | Runbook source — Sentinel Content Hub update checker |
+| `Get-SentinelContentUpdates.ps1` | Runbook source — Sentinel Content Hub update checker |
 
 ## Deployment
 
@@ -86,7 +87,7 @@ New-AzResourceGroupDeployment `
 | `logicAppName` | string | *(required)* | Name of the Logic App |
 | `automationAccountName` | string | *(required)* | Name of the Automation Account |
 | `automationAccountResourceGroup` | string | Deployment RG | RG of the Automation Account |
-| `runbookName` | string | `pocswe` | Name of the PowerShell runbook to execute |
+| `runbookName` | string | `Get-SentinelContentUpdates` | Name of the PowerShell runbook to execute |
 | `subscriptionId` | string | Current subscription | Azure Subscription ID |
 | `sentinelResourceGroup` | string | *(required)* | RG containing the Log Analytics workspace |
 | `workspaceName` | string | *(required)* | Log Analytics workspace name |
@@ -107,9 +108,9 @@ New-AzResourceGroupDeployment `
 | `logicAppId` | Resource ID of the deployed Logic App |
 | `automationAccountId` | Resource ID of the deployed Automation Account |
 
-## Runbook: pocswe.ps1
+## Runbook: Get-SentinelContentUpdates.ps1
 
-The `pocswe` runbook connects via managed identity and:
+The `Get-SentinelContentUpdates` runbook connects via managed identity and:
 
 1. Queries the Sentinel Content Hub API for **installed** content packages
 2. Queries for **available** content packages
