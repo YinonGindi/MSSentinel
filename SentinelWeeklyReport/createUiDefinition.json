@@ -1,0 +1,224 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "location",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Location",
+        "defaultValue": "[resourceGroup().location]",
+        "toolTip": "Azure region for all resources.",
+        "visible": false
+      }
+    ],
+    "steps": [
+      {
+        "name": "sentinel",
+        "label": "Sentinel Configuration",
+        "elements": [
+          {
+            "name": "sentinelResourceGroup",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Sentinel Resource Group",
+            "toolTip": "Select the resource group containing the Log Analytics workspace.",
+            "resourceType": "Microsoft.Resources/resourceGroups",
+            "options": {
+              "filter": {
+                "subscription": "onBasics"
+              }
+            }
+          },
+          {
+            "name": "workspaceName",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Log Analytics Workspace",
+            "toolTip": "Select the Log Analytics workspace for Sentinel.",
+            "resourceType": "Microsoft.OperationalInsights/workspaces",
+            "options": {
+              "filter": {
+                "subscription": "onBasics",
+                "location": "onBasics"
+              }
+            }
+          },
+          {
+            "name": "emailRecipient",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Email Recipient",
+            "toolTip": "Email address to send the weekly Sentinel report to.",
+            "placeholder": "user@contoso.com",
+            "constraints": {
+              "required": true,
+              "regex": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+              "validationMessage": "Please enter a valid email address."
+            }
+          }
+        ]
+      },
+      {
+        "name": "identity",
+        "label": "Managed Identity",
+        "elements": [
+          {
+            "name": "managedIdentityName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Managed Identity Name",
+            "toolTip": "Name of the User-Assigned Managed Identity to create.",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "managedIdentityResourceGroup",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Managed Identity Resource Group",
+            "toolTip": "Resource group for the managed identity (defaults to deployment RG).",
+            "resourceType": "Microsoft.Resources/resourceGroups",
+            "options": {
+              "filter": {
+                "subscription": "onBasics"
+              }
+            },
+            "visible": false
+          }
+        ]
+      },
+      {
+        "name": "automation",
+        "label": "Automation Account",
+        "elements": [
+          {
+            "name": "automationAccountName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Automation Account Name",
+            "defaultValue": "Get-SentinelUpdates",
+            "toolTip": "Name of the Automation Account.",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "automationAccountResourceGroup",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Automation Account Resource Group",
+            "toolTip": "Resource group for the Automation Account (defaults to deployment RG).",
+            "resourceType": "Microsoft.Resources/resourceGroups",
+            "options": {
+              "filter": {
+                "subscription": "onBasics"
+              }
+            },
+            "visible": false
+          },
+          {
+            "name": "runbookName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Runbook Name",
+            "defaultValue": "Get-SentinelContentUpdates",
+            "toolTip": "Name of the PowerShell runbook to execute.",
+            "constraints": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "name": "logicApp",
+        "label": "Logic App",
+        "elements": [
+          {
+            "name": "logicAppName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Logic App Name",
+            "defaultValue": "Sentinel-WeeklyReport",
+            "toolTip": "Name of the Consumption Logic App.",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "connectionsResourceGroup",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "API Connections Resource Group",
+            "toolTip": "Resource group for the API connections (defaults to deployment RG).",
+            "resourceType": "Microsoft.Resources/resourceGroups",
+            "options": {
+              "filter": {
+                "subscription": "onBasics"
+              }
+            },
+            "visible": false
+          },
+          {
+            "name": "recurrenceIntervalDays",
+            "type": "Microsoft.Common.Slider",
+            "label": "Recurrence Interval (Days)",
+            "toolTip": "How often the Logic App runs.",
+            "min": 1,
+            "max": 30,
+            "defaultValue": 7,
+            "showStepMarkers": false
+          },
+          {
+            "name": "recurrenceHour",
+            "type": "Microsoft.Common.Slider",
+            "label": "Run at Hour (0-23)",
+            "toolTip": "Hour of the day to run the Logic App.",
+            "min": 0,
+            "max": 23,
+            "defaultValue": 10,
+            "showStepMarkers": false
+          },
+          {
+            "name": "recurrenceMinute",
+            "type": "Microsoft.Common.Slider",
+            "label": "Run at Minute (0-59)",
+            "toolTip": "Minute of the hour to run the Logic App.",
+            "min": 0,
+            "max": 59,
+            "defaultValue": 30,
+            "showStepMarkers": false
+          },
+          {
+            "name": "timeZone",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Time Zone",
+            "defaultValue": "Israel Standard Time",
+            "toolTip": "Time zone for the recurrence schedule.",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
+                { "label": "Israel Standard Time", "value": "Israel Standard Time" },
+                { "label": "UTC", "value": "UTC" },
+                { "label": "Eastern Standard Time", "value": "Eastern Standard Time" },
+                { "label": "Central European Standard Time", "value": "Central European Standard Time" },
+                { "label": "Pacific Standard Time", "value": "Pacific Standard Time" },
+                { "label": "GMT Standard Time", "value": "GMT Standard Time" }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[location()]",
+      "managedIdentityName": "[steps('identity').managedIdentityName]",
+      "managedIdentityResourceGroup": "[if(empty(steps('identity').managedIdentityResourceGroup.name), resourceGroup().name, steps('identity').managedIdentityResourceGroup.name)]",
+      "logicAppName": "[steps('logicApp').logicAppName]",
+      "automationAccountName": "[steps('automation').automationAccountName]",
+      "automationAccountResourceGroup": "[if(empty(steps('automation').automationAccountResourceGroup.name), resourceGroup().name, steps('automation').automationAccountResourceGroup.name)]",
+      "runbookName": "[steps('automation').runbookName]",
+      "subscriptionId": "[subscription().subscriptionId]",
+      "sentinelResourceGroup": "[steps('sentinel').sentinelResourceGroup.name]",
+      "workspaceName": "[steps('sentinel').workspaceName.name]",
+      "emailRecipient": "[steps('sentinel').emailRecipient]",
+      "connectionsResourceGroup": "[if(empty(steps('logicApp').connectionsResourceGroup.name), resourceGroup().name, steps('logicApp').connectionsResourceGroup.name)]",
+      "recurrenceIntervalDays": "[steps('logicApp').recurrenceIntervalDays]",
+      "recurrenceHour": "[steps('logicApp').recurrenceHour]",
+      "recurrenceMinute": "[steps('logicApp').recurrenceMinute]",
+      "timeZone": "[steps('logicApp').timeZone]"
+    }
+  }
+}
