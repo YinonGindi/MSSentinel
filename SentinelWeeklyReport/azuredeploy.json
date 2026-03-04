@@ -225,7 +225,6 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('monitorLogsConnectionName')]",
       "location": "[parameters('location')]",
-      "kind": "shared",
       "properties": {
         "displayName": "azuremonitorlogs",
         "api": {
@@ -499,4 +498,5 @@
     }
   }
 }
+
 
