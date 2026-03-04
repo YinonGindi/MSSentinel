@@ -52,6 +52,7 @@
             "name": "managedIdentityName",
             "type": "Microsoft.Common.TextBox",
             "label": "Managed Identity Name",
+            "defaultValue": "ManagedIdentity-Sentinel",
             "toolTip": "Name of the User-Assigned Managed Identity to create.",
             "constraints": {
               "required": true
