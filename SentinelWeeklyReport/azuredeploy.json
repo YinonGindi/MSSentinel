@@ -11,6 +11,7 @@
     },
     "managedIdentityName": {
       "type": "string",
+      "defaultValue": "ManagedIdentity-SentinelUpdates",
       "metadata": {
         "description": "Name of the User-Assigned Managed Identity."
       }
@@ -492,3 +493,4 @@
     }
   }
 }
+
