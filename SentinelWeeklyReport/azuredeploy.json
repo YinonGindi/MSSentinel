@@ -24,12 +24,14 @@
     },
     "logicAppName": {
       "type": "string",
+      "defaultValue": "Sentinel-WeeklyReport",
       "metadata": {
         "description": "Name of the Consumption Logic App."
       }
     },
     "automationAccountName": {
       "type": "string",
+      "defaultValue": "SGet-SentinelUpdates",
       "metadata": {
         "description": "Name of the Automation Account."
       }
@@ -43,7 +45,7 @@
     },
     "runbookName": {
       "type": "string",
-      "defaultValue": "pocswe",
+      "defaultValue": "Get-SentinelContentUpdates",
       "metadata": {
         "description": "Name of the PowerShell runbook to execute."
       }
@@ -138,17 +140,31 @@
       "location": "[parameters('location')]"
     },
     {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
-      "name": "[guid(variables('workspaceId'), variables('sentinelReaderRoleId'), variables('managedIdentityId'))]",
-      "scope": "[variables('workspaceId')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "sentinelReaderRoleAssignment",
+      "resourceGroup": "[parameters('sentinelResourceGroup')]",
       "dependsOn": [
         "[variables('managedIdentityId')]"
       ],
       "properties": {
-        "roleDefinitionId": "[variables('sentinelReaderRoleId')]",
-        "principalId": "[reference(variables('managedIdentityId')).principalId]",
-        "principalType": "ServicePrincipal"
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/providers/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[concat(parameters('workspaceName'), '/Microsoft.Authorization/', guid(variables('workspaceId'), variables('sentinelReaderRoleId'), variables('managedIdentityId')))]",
+              "properties": {
+                "roleDefinitionId": "[variables('sentinelReaderRoleId')]",
+                "principalId": "[reference(variables('managedIdentityId')).principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
       }
     },
     {
