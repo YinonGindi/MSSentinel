@@ -211,15 +211,11 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('automationConnectionName')]",
       "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('managedIdentityId')]"
-      ],
       "properties": {
         "displayName": "azureautomation",
         "api": {
           "id": "[variables('automationManagedApiId')]"
-        },
-        "parameterValueType": "Alternative"
+        }
       }
     },
     {
@@ -227,15 +223,11 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('monitorLogsConnectionName')]",
       "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('managedIdentityId')]"
-      ],
       "properties": {
         "displayName": "azuremonitorlogs",
         "api": {
           "id": "[variables('monitorLogsManagedApiId')]"
-        },
-        "parameterValueType": "Alternative"
+        }
       }
     },
     {
@@ -247,44 +239,6 @@
         "displayName": "office365",
         "api": {
           "id": "[variables('office365ManagedApiId')]"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Web/connections/accessPolicies",
-      "apiVersion": "2016-06-01",
-      "name": "[concat(variables('automationConnectionName'), '/', parameters('logicAppName'))]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/connections', variables('automationConnectionName'))]",
-        "[variables('managedIdentityId')]"
-      ],
-      "properties": {
-        "principal": {
-          "type": "ActiveDirectory",
-          "identity": {
-            "tenantId": "[reference(variables('managedIdentityId')).tenantId]",
-            "objectId": "[reference(variables('managedIdentityId')).principalId]"
-          }
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Web/connections/accessPolicies",
-      "apiVersion": "2016-06-01",
-      "name": "[concat(variables('monitorLogsConnectionName'), '/', parameters('logicAppName'))]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/connections', variables('monitorLogsConnectionName'))]",
-        "[variables('managedIdentityId')]"
-      ],
-      "properties": {
-        "principal": {
-          "type": "ActiveDirectory",
-          "identity": {
-            "tenantId": "[reference(variables('managedIdentityId')).tenantId]",
-            "objectId": "[reference(variables('managedIdentityId')).principalId]"
-          }
         }
       }
     },
