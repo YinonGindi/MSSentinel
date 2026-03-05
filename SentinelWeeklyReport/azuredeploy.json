@@ -11,6 +11,7 @@
     },
     "managedIdentityName": {
       "type": "string",
+      "defaultValue": "ManagedIdentity-Sentinel",
       "metadata": {
         "description": "Name of the User-Assigned Managed Identity."
       }
@@ -24,12 +25,14 @@
     },
     "logicAppName": {
       "type": "string",
+      "defaultValue": "Sentinel-WeeklyReport",
       "metadata": {
         "description": "Name of the Consumption Logic App."
       }
     },
     "automationAccountName": {
       "type": "string",
+      "defaultValue": "SGet-SentinelUpdates",
       "metadata": {
         "description": "Name of the Automation Account."
       }
@@ -124,9 +127,9 @@
     "automationConnectionId": "[resourceId(parameters('connectionsResourceGroup'), 'Microsoft.Web/connections', variables('automationConnectionName'))]",
     "monitorLogsConnectionId": "[resourceId(parameters('connectionsResourceGroup'), 'Microsoft.Web/connections', variables('monitorLogsConnectionName'))]",
     "office365ConnectionId": "[resourceId(parameters('connectionsResourceGroup'), 'Microsoft.Web/connections', variables('office365ConnectionName'))]",
-    "automationManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'azureautomation')]",
-    "monitorLogsManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'azuremonitorlogs')]",
-    "office365ManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'office365')]",
+    "automationManagedApiId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/azureautomation')]",
+    "monitorLogsManagedApiId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/azuremonitorlogs')]",
+    "office365ManagedApiId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/office365')]",
     "sentinelReaderRoleId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ab8e14d6-4a74-4a29-9ba8-549422addade')]",
     "workspaceId": "[resourceId(parameters('sentinelResourceGroup'), 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
   },
@@ -222,11 +225,15 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('monitorLogsConnectionName')]",
       "location": "[parameters('location')]",
+      "kind": "V2",
       "properties": {
         "displayName": "azuremonitorlogs",
-        "customParameterValues": {},
         "api": {
           "id": "[variables('monitorLogsManagedApiId')]"
+        },
+        "parameterValueSet": {
+          "name": "oauthMI",
+          "values": {}
         }
       }
     },
@@ -492,6 +499,3 @@
     }
   }
 }
-
-
-
