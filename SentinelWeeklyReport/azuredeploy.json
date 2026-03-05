@@ -221,6 +221,7 @@
     {
       "type": "Microsoft.Web/connections",
       "apiVersion": "2016-06-01",
+      "kind": "V1",
       "name": "[variables('monitorLogsConnectionName')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -493,6 +494,7 @@
     }
   }
 }
+
 
 
 
