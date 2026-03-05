@@ -24,14 +24,12 @@
     },
     "logicAppName": {
       "type": "string",
-      "defaultValue": "Sentinel-WeeklyReport",
       "metadata": {
         "description": "Name of the Consumption Logic App."
       }
     },
     "automationAccountName": {
       "type": "string",
-      "defaultValue": "SGet-SentinelUpdates",
       "metadata": {
         "description": "Name of the Automation Account."
       }
@@ -221,7 +219,6 @@
     {
       "type": "Microsoft.Web/connections",
       "apiVersion": "2016-06-01",
-      "kind": "V1",
       "name": "[variables('monitorLogsConnectionName')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -229,10 +226,7 @@
         "api": {
           "id": "[variables('monitorLogsManagedApiId')]"
         },
-        "parameterValueType": {      "name": "managedIdentityAuth",
-      "values": {}
-        },
-        "customParameterValues": {}
+        "parameterValueType": "Alternative"
       }
     },
     {
@@ -497,6 +491,7 @@
     }
   }
 }
+
 
 
 
