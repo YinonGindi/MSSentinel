@@ -155,7 +155,7 @@
             {
               "type": "Microsoft.OperationalInsights/workspaces/providers/roleAssignments",
               "apiVersion": "2022-04-01",
-              "name": "[concat(parameters('workspaceName'), '/Microsoft.Authorization/', guid(variables('workspaceId'), variables('sentinelReaderRoleId'), variables('managedIdentityId')))]",
+              "name": "[concat(parameters('workspaceName'), '/Microsoft.Authorization/', guid(resourceGroup().id, variables('workspaceId'), variables('sentinelReaderRoleId'), parameters('managedIdentityName')))]",
               "properties": {
                 "roleDefinitionId": "[variables('sentinelReaderRoleId')]",
                 "principalId": "[reference(variables('managedIdentityId')).principalId]",
@@ -493,5 +493,6 @@
     }
   }
 }
+
 
 
