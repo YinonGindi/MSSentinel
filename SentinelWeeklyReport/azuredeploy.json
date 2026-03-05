@@ -229,7 +229,9 @@
         "api": {
           "id": "[variables('monitorLogsManagedApiId')]"
         },
-        "parameterValueType": "Alternative",
+        "parameterValueType": {      "name": "managedIdentityAuth",
+      "values": {}
+        },
         "customParameterValues": {}
       }
     },
@@ -495,6 +497,7 @@
     }
   }
 }
+
 
 
 
