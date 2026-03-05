@@ -11,7 +11,6 @@
     },
     "managedIdentityName": {
       "type": "string",
-      "defaultValue": "ManagedIdentity-Sentinel",
       "metadata": {
         "description": "Name of the User-Assigned Managed Identity."
       }
@@ -46,7 +45,6 @@
     },
     "runbookName": {
       "type": "string",
-      "defaultValue": "Get-SentinelContentUpdates",
       "metadata": {
         "description": "Name of the PowerShell runbook to execute."
       }
@@ -499,3 +497,4 @@
     }
   }
 }
+
