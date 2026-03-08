@@ -2,7 +2,7 @@
 
 An Azure Logic App that fetches **Endpoint Privilege Management (EPM) elevation request** logs from the Microsoft Graph beta API and ingests them into a **Log Analytics** custom log table for reporting, alerting, and Sentinel integration.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)]([[https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Frefs%2Fheads%2Fmain%2FConnectors%2FIntuneEPMElevationRequests%2Fazuredeploy.json)])
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Frefs%2Fheads%2Fmain%2FConnectors%2FIntuneEPMElevationRequests%2Fazuredeploy.json)
 
 ## Overview
 
