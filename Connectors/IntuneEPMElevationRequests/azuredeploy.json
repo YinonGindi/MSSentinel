@@ -84,10 +84,6 @@
             "$connections": {
               "defaultValue": {},
               "type": "Object"
-            },
-            "logType": {
-              "defaultValue": "",
-              "type": "String"
             }
           },
           "triggers": {
@@ -100,37 +96,27 @@
             }
           },
           "actions": {
-            "Initialize_NextLink": {
+            "Initialize_Variables": {
               "runAfter": {},
               "type": "InitializeVariable",
               "inputs": {
                 "variables": [
-                  {
-                    "name": "nextLink",
-                    "type": "string",
-                    "value": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests"
-                  }
-                ]
-              }
-            },
-            "Initialize_AllResults": {
-              "runAfter": {
-                "Initialize_NextLink": ["Succeeded"]
-              },
-              "type": "InitializeVariable",
-              "inputs": {
-                "variables": [
-                  {
-                    "name": "allResults",
-                    "type": "array",
-                    "value": []
-                  }
-                ]
+                        {
+                            "name": "nextLink",
+                            "type": "string",
+                            "value": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests"
+                        },
+                        {
+                            "name": "allResults",
+                            "type": "array",
+                            "value": []
+                        }
+                    ]
               }
             },
             "Paginate_Through_Results": {
               "runAfter": {
-                "Initialize_AllResults": ["Succeeded"]
+                "Initialize_Variables": ["Succeeded"]
               },
               "type": "Until",
               "expression": "@equals(variables('nextLink'), '')",
@@ -175,7 +161,7 @@
                         "not": {
                           "equals": [
                             "@body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']",
-                            "1"
+                            ""
                           ]
                         }
                       }
@@ -196,7 +182,7 @@
                         "type": "SetVariable",
                         "inputs": {
                           "name": "nextLink",
-                          "value": "1"
+                          "value": ""
                         }
                       }
                     }
@@ -265,7 +251,7 @@
                     "method": "post",
                     "body": "@{body('Flatten_Results')}",
                     "headers": {
-                      "Log-Type": "@parameters('logType')",
+                      "Log-Type": "[parameters('logAnalyticsLogType')]",
                       "time-generated-field": "requestCreatedDateTime"
                     },
                     "path": "/api/logs"
@@ -293,9 +279,6 @@
                 "id": "[variables('logAnalyticsConnectionId')]"
               }
             }
-          },
-          "logType": {
-            "value": "[parameters('logAnalyticsLogType')]"
           }
         }
       }
