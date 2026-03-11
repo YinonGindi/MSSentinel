@@ -14,6 +14,18 @@ An Azure Logic App that fetches **Endpoint Privilege Management (EPM) elevation 
 | **Sink** | Log Analytics custom table (`EPMElevationRequests_CL`) via DCE/DCR Logs Ingestion API |
 | **Schedule** | Configurable recurrence (default: every 24 hours) |
 
+## What gets deployed
+
+A single ARM template (`azuredeploy.json`) deploys all of the following:
+
+| Resource | Type | Description |
+|---|---|---|
+| Custom table | `EPMElevationRequests_CL` | Log Analytics table with all EPM columns |
+| Data Collection Endpoint | `<logicAppName>-dce` | Logs Ingestion API endpoint |
+| Data Collection Rule | `<logicAppName>-dcr` | Routes data from the stream to the custom table |
+| Logic App | `<logicAppName>` | Fetches EPM data from Graph and sends to DCE |
+| Role assignment | Monitoring Metrics Publisher | Grants the Logic App permission to send data to the DCR |
+
 ## Data collected
 
 Each record contains the following fields (flattened from the Graph response):
@@ -50,71 +62,27 @@ Each record contains the following fields (flattened from the Graph response):
 - An Azure subscription
 - An **Intune license** on the tenant (required for EPM Graph APIs)
 - A **Log Analytics workspace**
-- Permissions to create Logic Apps, Data Collection Endpoints/Rules, and assign Graph API roles
+- Permissions to create Logic Apps, Data Collection Endpoints/Rules, and assign roles
 
 ## Deployment
 
-### 1. Create the custom Log Analytics table
+### 1. Deploy the ARM template
 
-Edit `createTable.ps1` with your tenant, subscription, resource group, and workspace names, then run it:
-
-```powershell
-.\createTable.ps1
-```
-
-This creates the `EPMElevationRequests_CL` table with all required columns.
-
-### 2. Deploy the Data Collection Endpoint (DCE)
-
-```bash
-az deployment group create \
-  --resource-group <RESOURCE_GROUP> \
-  --template-file DCE_template.json \
-  --parameters dataCollectionEndpointName=<DCE_NAME>
-```
-
-Note the **Logs Ingestion URL** from the deployment output.
-
-### 3. Deploy the Data Collection Rule (DCR)
-
-```bash
-az deployment group create \
-  --resource-group <RESOURCE_GROUP> \
-  --template-file DCR_template.json \
-  --parameters \
-    dataCollectionRuleName=<DCR_NAME> \
-    workspaceResourceId=<LOG_ANALYTICS_WORKSPACE_RESOURCE_ID> \
-    endpointResourceId=<DCE_RESOURCE_ID_FROM_STEP_2>
-```
-
-Note the **DCR Immutable ID** from the deployment output.
-
-### 4. Deploy the Logic App
-
-```bash
-az deployment group create \
-  --resource-group <RESOURCE_GROUP> \
-  --template-file azuredeploy.json \
-  --parameters azuredeploy.parameters.json
-```
-
-Or with explicit parameters:
+Click the **Deploy to Azure** button above, or use the CLI:
 
 ```bash
 az deployment group create \
   --resource-group <RESOURCE_GROUP> \
   --template-file azuredeploy.json \
   --parameters \
-    dceLogsIngestionUrl=<LOGS_INGESTION_URL_FROM_STEP_2> \
-    dcrImmutableId=<DCR_IMMUTABLE_ID_FROM_STEP_3> \
-    dcrStreamName=Custom-EPMElevationRequests
+    logAnalyticsWorkspaceName=<YOUR_WORKSPACE_NAME>
 ```
 
-> The deployment outputs the Logic App's **Managed Identity Principal ID** — you'll need this in the next steps.
+> The template creates everything automatically: custom table, DCE, DCR, Logic App, and the Monitoring Metrics Publisher role assignment. The deployment outputs the Logic App's **Managed Identity Principal ID** — you'll need this in the next step.
 
-### 5. Grant Microsoft Graph permissions to the Managed Identity
+### 2. Grant Microsoft Graph permissions to the Managed Identity
 
-The Logic App's managed identity needs the `DeviceManagementConfiguration.Read.All` application permission on Microsoft Graph.
+The Logic App's managed identity needs the `DeviceManagementConfiguration.Read.All` application permission on Microsoft Graph. This is the only manual post-deployment step.
 
 ```powershell
 # Install the module if needed
@@ -139,18 +107,7 @@ New-MgServicePrincipalAppRoleAssignment `
   -AppRoleId $appRole.Id
 ```
 
-### 6. Grant Monitoring Metrics Publisher role on the DCR
-
-The Logic App's managed identity needs the **Monitoring Metrics Publisher** role on the Data Collection Rule to send data via the Logs Ingestion API.
-
-```bash
-az role assignment create \
-  --assignee <PRINCIPAL_ID_FROM_DEPLOYMENT_OUTPUT> \
-  --role "Monitoring Metrics Publisher" \
-  --scope <DCR_RESOURCE_ID_FROM_STEP_3>
-```
-
-### 7. Verify
+### 3. Verify
 
 1. Open the Logic App in the portal
 2. Click **Run Trigger** → **Recurrence** to manually trigger a run
@@ -196,12 +153,11 @@ EPMElevationRequests_CL
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `logicAppName` | string | `EPM-FetchElevationRequests` | Logic App resource name |
+| `logicAppName` | string | `EPM-FetchElevationRequests` | Logic App resource name (also used to derive DCE/DCR names) |
 | `location` | string | Resource group location | Azure region |
 | `recurrenceIntervalHours` | int | `24` | Run frequency in hours |
-| `dceLogsIngestionUrl` | string | *(required)* | Logs Ingestion URL of the Data Collection Endpoint |
-| `dcrImmutableId` | string | *(required)* | Immutable ID of the Data Collection Rule |
-| `dcrStreamName` | string | `Custom-EPMElevationRequests` | Stream name declared in the DCR |
+| `logAnalyticsWorkspaceName` | string | *(required)* | Name of an existing Log Analytics workspace |
+| `logAnalyticsWorkspaceRG` | string | Deployment resource group | Resource group of the workspace (if different) |
 
 ## License
 
