@@ -1,30 +1,6 @@
-<#
-.SYNOPSIS
-    Creates (or migrates) the EPMElevationRequests_CL custom log table in Log Analytics.
-
-.DESCRIPTION
-    Run this script BEFORE deploying the DCR template.
-    - If the table does not exist, it creates a new DCR-based custom table.
-    - If a classic (MMA-based) table already exists, it migrates it first.
-
-.PARAMETER WorkspaceResourceGroupName
-    Resource group containing the Log Analytics workspace.
-
-.PARAMETER WorkspaceName
-    Name of the Log Analytics workspace.
-
-.EXAMPLE
-    Connect-AzAccount
-    .\createTable.ps1 -WorkspaceResourceGroupName "rg-sentinel" -WorkspaceName "la-sentinel-wus2"
-#>
-param(
-    [Parameter(Mandatory = $true)]
-    [string]$WorkspaceResourceGroupName,
-
-    [Parameter(Mandatory = $true)]
-    [string]$WorkspaceName
-)
-
+#Variables
+$WorkspaceResourceGroupName=""
+$WorkspaceName=""
 $ErrorActionPreference = "Stop"
 $SubscriptionId = (Get-AzContext).Subscription.Id
 $TableName = "EPMElevationRequests_CL"
@@ -99,3 +75,4 @@ if ($result.StatusCode -in 200, 202) {
 } else {
     Write-Error "Failed to create table. Status: $($result.StatusCode) Content: $($result.Content)"
 }
+
