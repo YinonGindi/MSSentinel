@@ -435,8 +435,8 @@
                         "dcrConfig": {
                             "type": "object",
                             "defaultValue": {
-                                "dataCollectionEndpoint": "[[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName')), '2021-09-01-preview').logsIngestion.endpoint]",
-                                "dataCollectionRuleImmutableId": "[[reference(resourceId('Microsoft.Insights/dataCollectionRules', variables('dataCollectionRuleName')), '2021-09-01-preview').immutableId]"
+                                "dataCollectionEndpoint": "[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName')), '2021-09-01-preview').logsIngestion.endpoint]",
+                                "dataCollectionRuleImmutableId": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', variables('dataCollectionRuleName')), '2021-09-01-preview').immutableId]"
                             }
                         },
                         "clientId": {
