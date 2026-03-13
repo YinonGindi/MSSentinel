@@ -429,7 +429,7 @@
                             "minLength": 1
                         },
                         "workspace": {
-                            "defaultValue": "[[variables('workspaceName')]",
+                            "defaultValue": "[variables('workspaceName')]",
                             "type": "securestring"
                         },
                         "dcrConfig": {
