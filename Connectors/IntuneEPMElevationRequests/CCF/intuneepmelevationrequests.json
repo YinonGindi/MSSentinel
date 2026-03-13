@@ -416,7 +416,7 @@
                     "contentVersion": "1.0.0",
                     "parameters": {
                         "guidValue": {
-                            "defaultValue": "[newGuid()]",
+                            "defaultValue": "[[newGuid()]",
                             "type": "securestring"
                         },
                         "innerWorkspace": {
@@ -429,7 +429,7 @@
                             "minLength": 1
                         },
                         "workspace": {
-                            "defaultValue": "[variables('workspaceName')]",
+                            "defaultValue": "[[variables('workspaceName')]",
                             "type": "securestring"
                         },
                         "dcrConfig": {
