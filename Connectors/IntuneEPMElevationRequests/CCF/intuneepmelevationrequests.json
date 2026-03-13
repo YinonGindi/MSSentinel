@@ -1,0 +1,558 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "string",
+            "metadata": {
+                "description": "Workspace name for Log Analytics where Microsoft Sentinel is setup"
+            }
+        },
+        "workspace-location": {
+            "type": "string",
+            "allowedValues": [
+                "eastus",
+                "eastus2",
+                "westus",
+                "westus2",
+                "westus3",
+                "centralus",
+                "northcentralus",
+                "southcentralus",
+                "westcentralus",
+                "canadacentral",
+                "canadaeast",
+                "brazilsouth",
+                "northeurope",
+                "westeurope",
+                "uksouth",
+                "ukwest",
+                "francecentral",
+                "francesouth",
+                "germanywestcentral",
+                "norwayeast",
+                "switzerlandnorth",
+                "swedencentral",
+                "australiaeast",
+                "australiasoutheast",
+                "australiacentral",
+                "southeastasia",
+                "eastasia",
+                "japaneast",
+                "japanwest",
+                "koreacentral",
+                "koreasouth",
+                "southindia",
+                "centralindia",
+                "westindia",
+                "uaenorth",
+                "southafricanorth"
+            ],
+            "metadata": {
+                "description": "Region to deploy solution resources (must match workspace region)"
+            }
+        }
+    },
+    "variables": {
+        "workspaceResourceId": "[resourceId('microsoft.OperationalInsights/Workspaces', parameters('workspace'))]",
+        "workspaceName": "[parameters('workspace')]",
+        "subscription": "[subscription().subscriptionId]",
+        "resourceGroupName": "[resourceGroup().name]",
+        "_solutionName": "Intune EPM Elevation Requests",
+        "_solutionVersion": "1.0.0",
+        "_solutionAuthor": "Yinon Gindi",
+        "_packageIcon": "\u003cimg src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/Microsoft_logo.svg\" width=\"75px\" height=\"75px\"\u003e",
+        "_solutionId": "azuresentinel.azure-sentinel-solution-"intuneepmelevationrequests",
+        "dataConnectorVersionConnectorDefinition": "1.0.0",
+        "dataConnectorVersionConnections": "1.0.0",
+        "_solutionTier": "Community",
+        "_dataConnectorContentIdConnectorDefinition": ""EPMFetchElevationRequestsDefinition",
+        "dataConnectorTemplateNameConnectorDefinition": "[concat(variables('workspaceName'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnectorDefinition')))]",
+        "_dataConnectorContentIdConnections": ""EPMFetchElevationRequestsConnections",
+        "dataConnectorTemplateNameConnections": "[concat(variables('workspaceName'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnections')))]",
+        "_logAnalyticsTableId1": "EPMElevationRequests_CL",
+        "dataCollectionRuleName": "DCR-EPMElevationRequests",
+        "dataCollectionEndpointName": "DCE-EPMElevationRequests",
+        "columns": [
+      { "name": "TimeGenerated", "type": "datetime" },
+      { "name": "id", "type": "string" },
+      { "name": "status", "type": "string" },
+      { "name": "requestedByUserId", "type": "string" },
+      { "name": "requestedByUserPrincipalName", "type": "string" },
+      { "name": "requestedOnDeviceId", "type": "string" },
+      { "name": "deviceName", "type": "string" },
+      { "name": "requestCreatedDateTime", "type": "datetime" },
+      { "name": "requestLastModifiedDateTime", "type": "datetime" },
+      { "name": "requestJustification", "type": "string" },
+      { "name": "requestExpiryDateTime", "type": "datetime" },
+      { "name": "fileName", "type": "string" },
+      { "name": "filePath", "type": "string" },
+      { "name": "fileHash", "type": "string" },
+      { "name": "fileDescription", "type": "string" },
+      { "name": "publisherName", "type": "string" },
+      { "name": "publisherCert", "type": "string" },
+      { "name": "productName", "type": "string" },
+      { "name": "productInternalName", "type": "string" },
+      { "name": "productVersion", "type": "string" },
+      { "name": "reviewCompletedByUserId", "type": "string" },
+      { "name": "reviewCompletedByUserPrincipalName", "type": "string" },
+      { "name": "reviewCompletedDateTime", "type": "datetime" },
+      { "name": "reviewerJustification", "type": "string" }
+    ]
+    },
+    "resources": [
+        {
+            "name": "[variables('dataCollectionEndpointName')]",
+            "apiVersion": "2021-09-01-preview",
+            "type": "Microsoft.Insights/dataCollectionEndpoints",
+            "location": "[parameters('workspace-location')]",
+            "properties": {
+                "networkAcls": {
+                    "publicNetworkAccess": "Enabled"
+                }
+            }
+        },
+        {
+            "name": "[variables('dataCollectionRuleName')]",
+            "apiVersion": "2021-09-01-preview",
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "location": "[parameters('workspace-location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces/tables', variables('workspaceName'), variables('_logAnalyticsTableId1'))]"
+            ],
+            "properties": {
+                "dataCollectionEndpointId": "[concat('/subscriptions/',variables('subscription'),'/resourceGroups/',variables('resourceGroupName'),'/providers/Microsoft.Insights/dataCollectionEndpoints/',variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-EPMElevationRequests": {
+                        "columns": "[variables('columns')]"
+                    }
+                },
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[variables('workspaceResourceId')]",
+                            "name": "workspace"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-EPMElevationRequests"
+                        ],
+                        "destinations": [
+                            "workspace"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Custom-EPMElevationRequests_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[concat(variables('workspaceName'),'/', variables('_logAnalyticsTableId1'))]",
+            "apiVersion": "2022-10-01",
+            "type": "Microsoft.OperationalInsights/workspaces/tables",
+            "location": "[parameters('workspace-location')]",
+            "properties": {
+                "schema": {
+                    "name": "[variables('_logAnalyticsTableId1')]",
+                    "columns": "[variables('columns')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces/providers/contentPackages",
+            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/', variables('_solutionId'))]",
+            "location": "[parameters('workspace-location')]",
+            "apiVersion": "2023-04-01-preview",
+            "properties": {
+                "version": "[variables('_solutionVersion')]",
+                "kind": "Solution",
+                "contentSchemaVersion": "3.0.0",
+                "contentId": "[variables('_solutionId')]",
+                "source": {
+                    "kind": "Solution",
+                    "name": "[variables('_solutionName')]",
+                    "sourceId": "[variables('_solutionId')]"
+                },
+                "author": {
+                    "name": "[variables('_solutionAuthor')]"
+                },
+                "support": {
+                    "name": "[variables('_solutionAuthor')]",
+                    "tier": "Community"
+                },
+                "categories": {
+                    "domains": ["Cloud Provider"],
+                    "verticals": []
+                },
+                "dependencies": {
+                    "operator": "AND",
+                    "criteria": [
+                        {
+                            "kind": "DataConnector",
+                            "contentId": "[variables('_dataConnectorContentIdConnectorDefinition')]",
+                            "version": "[variables('dataConnectorVersionConnectorDefinition')]"
+                        }
+                    ]
+                },
+                "firstPublishDate": "2025-12-30",
+                "providers": [
+                    "[variables('_solutionAuthor')]"
+                ],
+                "contentKind": "Solution",
+                "packageId": "[variables('_solutionId')]",
+                "contentProductId": "[concat(substring(variables('_solutionId'), 0, 50),'-','sl','-', uniqueString(concat(variables('_solutionId'),'-','Solution','-',variables('_solutionId'),'-', variables('_solutionVersion'))))]",
+                "displayName": "[variables('_solutionName')]",
+                "publisherDisplayName": "[variables('_solutionId')]",
+                "descriptionHtml": "Connector to fetches Intune Endpoint Privilege Management (EPM) elevation request logs from the Microsoft Graph beta API and ingests them into a Log Analytics custom log table via the CCF (Data Collection Endpoint / Data Collection Rule) for reporting, alerting, and Sentinel integration.",
+                "icon": "[variables('_packageIcon')]"
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+            "apiVersion": "2023-04-01-preview",
+            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/', variables('dataConnectorTemplateNameConnectorDefinition'), variables('dataConnectorVersionConnectorDefinition'))]",
+            "location": "[parameters('workspace-location')]",
+            "dependsOn": [
+                "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+            ],
+            "properties": {
+                "contentId": "[variables('_dataConnectorContentIdConnectorDefinition')]",
+                "displayName": "[concat(variables('_solutionName'), ' ', variables('dataConnectorTemplateNameConnectorDefinition'))]",
+                "contentKind": "DataConnector",
+                "mainTemplate": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "[variables('dataConnectorVersionConnectorDefinition')]",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/',concat('DataConnector-', variables('_dataConnectorContentIdConnectorDefinition')))]",
+                            "apiVersion": "2022-01-01-preview",
+                            "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+                            "properties": {
+                                "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName')), 'Microsoft.SecurityInsights/dataConnectorDefinitions', variables('_dataConnectorContentIdConnectorDefinition'))]",
+                                "contentId": "[variables('_dataConnectorContentIdConnectorDefinition')]",
+                                "kind": "DataConnector",
+                                "version": "[variables('dataConnectorVersionConnectorDefinition')]",
+                                "source": {
+                                    "sourceId": "[variables('_solutionId')]",
+                                    "name": "[variables('_solutionName')]",
+                                    "kind": "Solution"
+                                },
+                                "author": {
+                                    "name": "[variables('_solutionAuthor')]"
+                                },
+                                "support": {
+                                    "name": "[variables('_solutionAuthor')]",
+                                    "tier": "[variables('_solutionTier')]"
+                                },
+                                "dependencies": {
+                                    "criteria": [
+                                        {
+                                            "version": "[variables('dataConnectorVersionConnections')]",
+                                            "contentId": "[variables('_dataConnectorContentIdConnections')]",
+                                            "kind": "ResourcesDataConnector"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "packageKind": "Solution",
+                "packageVersion": "[variables('_solutionVersion')]",
+                "packageName": "[variables('_solutionName')]",
+                "contentProductId": "[concat(substring(variables('_solutionId'), 0, 50),'-','dc','-', uniqueString(concat(variables('_solutionId'),'-','DataConnector','-',variables('_dataConnectorContentIdConnectorDefinition'),'-', variables('dataConnectorVersionConnectorDefinition'))))]",
+                "packageId": "[variables('_solutionId')]",
+                "contentSchemaVersion": "3.0.0",
+                "version": "[variables('_solutionVersion')]"
+            }
+        },
+        {
+            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/',variables('_dataConnectorContentIdConnectorDefinition'))]",
+            "apiVersion": "2022-09-01-preview",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectorDefinitions",
+            "location": "[parameters('workspace-location')]",
+            "kind": "Customizable",
+            "properties": {
+                "connectorUiConfig": {
+                    "id": "IntuneEPMElevationRequests",
+                    "title": "Intune EPM Elevation Requests",
+                    "publisher": "Yinon Gindi",
+                    "descriptionMarkdown": "Intune Endpoint Privilege Management (EPM) Elevation Request connector ingests elevation request logs from Intune EPM.\n\nEPMElevationRequests_CL table with **24 columns** captures detailed activity across Intune EPM Elevation Requests.\n\n**Prerequisites:** Entra ID app with `DeviceManagementConfiguration.Read.All` application permission on Microsoft Graph.",
+                    "graphQueriesTableName": "EPMElevationRequests_CL",
+                    "graphQueries": [
+                        {
+                            "metricName": "Total events received",
+                            "legend": "EPM Elevation Requests Events",
+                            "baseQuery": "EPMElevationRequests_CL"
+                        }
+                    ],
+                    "sampleQueries": [
+                        {
+                            "description": "All Microsoft 365 Audit Events",
+                            "query": "EPMElevationRequests_CL\n| sort by TimeGenerated desc"
+                        },
+                        {
+                            "description": "Events by Workload",
+                            "query": "EPMElevationRequests_CL\n| where status == "pending"\n| summarize Count = count() by requestedByUserPrincipalName\n"
+                        }
+                    ],
+                    "dataTypes": [
+                        {
+                            "name": "EPMElevationRequests_CL",
+                            "lastDataReceivedQuery": "EPMElevationRequests_CL\n| summarize Time = max(TimeGenerated)\n| where isnotempty(Time)"
+                        }
+                    ],
+                    "connectivityCriteria": [
+                        {
+                            "type": "HasDataConnectors"
+                        }
+                    ],
+                    "availability": {
+                        "status": 1,
+                        "isPreview": false
+                    },
+                    "permissions": {
+                        "resourceProvider": [
+                            {
+                                "provider": "Microsoft.OperationalInsights/workspaces",
+                                "permissionsDisplayText": "read and write permissions are required.",
+                                "providerDisplayName": "Workspace",
+                                "scope": "Workspace",
+                                "requiredPermissions": {
+                                    "write": true,
+                                    "read": true,
+                                    "delete": true
+                                }
+                            }
+                        ],
+                        "customs": [
+                            {
+                                "name": "Intune EPM Elevation Request API credentials",
+                                "description": "An Entra ID application registration with **Client ID** and **Client Secret**. The application must have **Microsoft Graph - DeviceManagementConfiguration.Read.All** permission."
+                            }
+                        ]
+                    },
+                    "instructionSteps": [
+                        {
+                            "title": "1. Register an Entra ID Application",
+                            "description": "\\n\\n1. Go to **Microsoft Entra ID** \u003e **App registrations** \u003e **New registration**\n2. Name: `Sentinel-IntuneEPMElevationRequests` (or your preferred name)\n3. **Supported account types**: Accounts in this organizational directory only\n4. Click **Register**\n5. Note the **Application (client) ID** - you'll need this later\n6. Go to **Certificates \u0026 secrets** \u003e **New client secret**\n7. Add a description, set expiration, click **Add**\n8. **Copy the secret Value immediately** - it won't be shown again"
+                        },
+                        {
+                            "title": "2. Configure API Permissions",
+                            "description": "\n1. In your app registration, go to **API permissions** \u003e **Add a permission**\n2. Select **Microsoft Graph**\n3. Choose **Application permissions**\n4. Select **DeviceManagementConfiguration.Read.All**\n5. Click **Add permissions**\n6. Click **Grant admin consent** for your tenant\n7. Verify the permission shows as **Granted**"
+                        },
+                        {
+                            "title": "3. Connect the Data Connector",
+                            "description": "Provide your Entra ID application credentials below. The connector will automatically use your subscription's tenant ID for authentication and API calls.",
+                            "instructions": [
+                                {
+                                    "type": "OAuthForm",
+                                    "parameters": {
+                                        "clientIdLabel": "Application (Client) ID",
+                                        "clientSecretLabel": "Client Secret Value",
+                                        "connectButtonLabel": "Connect",
+                                        "disconnectButtonLabel": "Disconnect"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/',concat('DataConnector-', variables('_dataConnectorContentIdConnectorDefinition')))]",
+            "apiVersion": "2022-01-01-preview",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+            "properties": {
+                "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName')), 'Microsoft.SecurityInsights/dataConnectorDefinitions', variables('_dataConnectorContentIdConnectorDefinition'))]",
+                "contentId": "[variables('_dataConnectorContentIdConnectorDefinition')]",
+                "kind": "DataConnector",
+                "version": "[variables('dataConnectorVersionConnectorDefinition')]",
+                "source": {
+                    "sourceId": "[variables('_solutionId')]",
+                    "name": "[variables('_solutionName')]",
+                    "kind": "Solution"
+                },
+                "author": {
+                    "name": "[variables('_solutionAuthor')]"
+                },
+                "support": {
+                    "name": "[variables('_solutionAuthor')]",
+                    "tier": "[variables('_solutionTier')]"
+                },
+                "dependencies": {
+                    "criteria": [
+                        {
+                            "version": "[variables('dataConnectorVersionConnections')]",
+                            "contentId": "[variables('_dataConnectorContentIdConnections')]",
+                            "kind": "ResourcesDataConnector"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+            "apiVersion": "2023-04-01-preview",
+            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/', variables('dataConnectorTemplateNameConnections'), variables('dataConnectorVersionConnections'))]",
+            "location": "[parameters('workspace-location')]",
+            "dependsOn": [
+                "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces/providers/contentTemplates', variables('workspaceName'), 'Microsoft.SecurityInsights', concat(variables('dataConnectorTemplateNameConnectorDefinition'), variables('dataConnectorVersionConnectorDefinition')))]"
+            ],
+            "properties": {
+                "contentId": "[variables('_dataConnectorContentIdConnections')]",
+                "displayName": "[concat(variables('_solutionName'), ' ', variables('dataConnectorTemplateNameConnections'))]",
+                "contentKind": "ResourcesDataConnector",
+                "mainTemplate": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0",
+                    "parameters": {
+                        "guidValue": {
+                            "defaultValue": "[[newGuid()]",
+                            "type": "securestring"
+                        },
+                        "innerWorkspace": {
+                            "defaultValue": "[variables('workspaceName')]",
+                            "type": "securestring"
+                        },
+                        "connectorDefinitionName": {
+                            "defaultValue": "EPMFetchElevationRequestsDefinition",
+                            "type": "securestring",
+                            "minLength": 1
+                        },
+                        "workspace": {
+                            "defaultValue": "[variables('workspaceName')]",
+                            "type": "securestring"
+                        },
+                        "dcrConfig": {
+                            "type": "object",
+                            "defaultValue": {
+                                "dataCollectionEndpoint": "[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName')), '2021-09-01-preview').logsIngestion.endpoint]",
+                                "dataCollectionRuleImmutableId": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', variables('dataCollectionRuleName')), '2021-09-01-preview').immutableId]"
+                            }
+                        },
+                        "clientId": {
+                            "type": "securestring",
+                            "defaultValue": "-NA-",
+                            "minLength": 1
+                        },
+                        "clientSecret": {
+                            "type": "securestring",
+                            "defaultValue": "-NA-",
+                            "minLength": 1
+                        }
+                    },
+                    "variables": {
+                        "_dataConnectorContentIdConnections": "[variables('_dataConnectorContentIdConnections')]"
+                    },
+                    "resources": [
+                        {
+                            "name": "[concat(variables('workspaceName'),'/Microsoft.SecurityInsights/',concat('DataConnector-', variables('_dataConnectorContentIdConnections')))]",
+                            "apiVersion": "2022-01-01-preview",
+                            "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+                            "properties": {
+                                "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName')), 'Microsoft.SecurityInsights/dataConnectors', variables('_dataConnectorContentIdConnections'))]",
+                                "contentId": "[variables('_dataConnectorContentIdConnections')]",
+                                "kind": "ResourcesDataConnector",
+                                "version": "[variables('dataConnectorVersionConnections')]",
+                                "source": {
+                                    "sourceId": "[variables('_solutionId')]",
+                                    "name": "[variables('_solutionName')]",
+                                    "kind": "Solution"
+                                },
+                                "author": {
+                                    "name": "[variables('_solutionAuthor')]"
+                                },
+                                "support": {
+                                    "name": "[variables('_solutionAuthor')]",
+                                    "tier": "[variables('_solutionTier')]"
+                                }
+                            }
+                        },
+                        {
+                            "name": "[[concat(parameters('innerWorkspace'),'/Microsoft.SecurityInsights/','IntuneEPMElevationRequestsPolling', parameters('guidValue'))]",
+                            "apiVersion": "2023-02-01-preview",
+                            "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
+                            "location": "[parameters('workspace-location')]",
+                            "kind": "RestApiPoller",
+                            "properties": {
+                                "connectorDefinitionName": "EPMFetchElevationRequestsDefinition",
+                                "dataType": "EPMElevationRequests_CL",
+                                "dcrConfig": {
+                                    "streamName": "Custom-EPMElevationRequests",
+                                    "dataCollectionEndpoint": "[[parameters('dcrConfig').dataCollectionEndpoint]",
+                                    "dataCollectionRuleImmutableId": "[[parameters('dcrConfig').dataCollectionRuleImmutableId]"
+                                },
+                                "auth": {
+                                    "type": "OAuth2",
+                                    "ClientId": "[[parameters('clientId')]",
+                                    "ClientSecret": "[[parameters('clientSecret')]",
+                                    "GrantType": "client_credentials",
+                                    "TokenEndpoint": "[concat('https://login.microsoftonline.com/', subscription().tenantId, '/oauth2/v2.0/token')]",
+                                    "TokenEndpointHeaders": {
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    "TokenEndpointQueryParameters": {},
+                                    "Scope": "https://graph.microsoft.com"
+                                },
+                                "request": {
+                                    "apiEndpoint": "https://graph.microsoft.com/beta/deviceManagement/elevationRequest",
+                                    "httpMethod": "GET",
+                                    "rateLimitQPS": 100,
+                                    "queryWindowInMin": 1,
+                                    "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss",
+                                    "retryCount": 3,
+                                    "timeoutInSeconds": 60,
+                                    "headers": {
+                                        "Accept": "application/json"
+                                    },
+                                    "queryParameters": {
+                                        $filter": "requestLastModifiedDateTime ge {_QueryWindowStartTime}",
+                                        "$orderby": "requestLastModifiedDateTime desc"
+
+                                    },
+                                    "isPostPayloadJson": false
+                                },
+                                "response": {
+                                    "eventsJsonPaths": [
+                                        "$.value[*]"
+                                    ],
+                                    "format": "json"
+                                },
+                                "paging": {
+                                    "pagingType": "NextPageUrl",
+                                    "nextPageParaName": "NextPageUri",
+                                    "nextPageTokenJsonPath": "$['@odata.nextLink']"
+                                },
+                                "stepInfo": {
+                                    "stepType": "Nested",
+                                    "nextSteps": [
+                                        {
+                                            "stepId": "fetchContentData",
+                                            "stepPlaceholdersParsingKql": "source"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "packageKind": "Solution",
+                "packageVersion": "[variables('_solutionVersion')]",
+                "packageName": "[variables('_solutionName')]",
+                "contentProductId": "[concat(substring(variables('_solutionId'), 0, 50),'-','rdc','-', uniqueString(concat(variables('_solutionId'),'-','ResourcesDataConnector','-',variables('_dataConnectorContentIdConnections'),'-', variables('dataConnectorVersionConnections'))))]",
+                "packageId": "[variables('_solutionId')]",
+                "contentSchemaVersion": "3.0.0",
+                "version": "[variables('_solutionVersion')]"
+            }
+        }
+    ]
+}
