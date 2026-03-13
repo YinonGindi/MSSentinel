@@ -435,8 +435,8 @@
                         "dcrConfig": {
                             "type": "object",
                             "defaultValue": {
-                                "dataCollectionEndpoint": "[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName')), '2021-09-01-preview').logsIngestion.endpoint]",
-                                "dataCollectionRuleImmutableId": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', variables('dataCollectionRuleName')), '2021-09-01-preview').immutableId]"
+                                "dataCollectionEndpoint": "[[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName')), '2021-09-01-preview').logsIngestion.endpoint]",
+                                "dataCollectionRuleImmutableId": "[[reference(resourceId('Microsoft.Insights/dataCollectionRules', variables('dataCollectionRuleName')), '2021-09-01-preview').immutableId]"
                             }
                         },
                         "clientId": {
@@ -478,7 +478,7 @@
                             }
                         },
                         {
-                            "name": "[concat(parameters('innerWorkspace'),'/Microsoft.SecurityInsights/','IntuneEPMElevationRequestsPolling', parameters('guidValue'))]",
+                            "name": "[[concat(parameters('innerWorkspace'),'/Microsoft.SecurityInsights/','IntuneEPMElevationRequestsPolling', parameters('guidValue'))]",
                             "apiVersion": "2023-02-01-preview",
                             "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
                             "location": "[parameters('workspace-location')]",
@@ -488,20 +488,20 @@
                                 "dataType": "EPMElevationRequests_CL",
                                 "dcrConfig": {
                                     "streamName": "Custom-EPMElevationRequests",
-                                    "dataCollectionEndpoint": "[parameters('dcrConfig').dataCollectionEndpoint]",
-                                    "dataCollectionRuleImmutableId": "[parameters('dcrConfig').dataCollectionRuleImmutableId]"
+                                    "dataCollectionEndpoint": "[[parameters('dcrConfig').dataCollectionEndpoint]",
+                                    "dataCollectionRuleImmutableId": "[[parameters('dcrConfig').dataCollectionRuleImmutableId]"
                                 },
                                 "auth": {
                                     "type": "OAuth2",
-                                    "clientId": "[parameters('clientId')]",
-                                    "clientSecret": "[parameters('clientSecret')]",
-                                    "grantType": "client_credentials",
-                                    "tokenEndpoint": "[concat('https://login.microsoftonline.com/', subscription().tenantId, '/oauth2/v2.0/token')]",
-                                    "tokenEndpointHeaders": {
+                                    "ClientId": "[[parameters('clientId')]",
+                                    "ClientSecret": "[[parameters('clientSecret')]",
+                                    "GrantType": "client_credentials",
+                                    "TokenEndpoint": "[concat('https://login.microsoftonline.com/', subscription().tenantId, '/oauth2/v2.0/token')]",
+                                    "TokenEndpointHeaders": {
                                         "Content-Type": "application/x-www-form-urlencoded"
                                     },
-                                    "tokenEndpointQueryParameters": {},
-                                    "scope": "https://graph.microsoft.com/.default"
+                                    "TokenEndpointQueryParameters": {},
+                                    "Scope": "https://graph.microsoft.com/.default"
                                 },
                                 "request": {
                                     "apiEndpoint": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests",
