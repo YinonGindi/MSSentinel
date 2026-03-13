@@ -493,15 +493,15 @@
                                 },
                                 "auth": {
                                     "type": "OAuth2",
-                                    "ClientId": "[parameters('clientId')]",
-                                    "ClientSecret": "[parameters('clientSecret')]",
-                                    "GrantType": "client_credentials",
-                                    "TokenEndpoint": "[concat('https://login.microsoftonline.com/', subscription().tenantId, '/oauth2/v2.0/token')]",
-                                    "TokenEndpointHeaders": {
+                                    "clientId": "[parameters('clientId')]",
+                                    "clientSecret": "[parameters('clientSecret')]",
+                                    "grantType": "client_credentials",
+                                    "tokenEndpoint": "[concat('https://login.microsoftonline.com/', subscription().tenantId, '/oauth2/v2.0/token')]",
+                                    "tokenEndpointHeaders": {
                                         "Content-Type": "application/x-www-form-urlencoded"
                                     },
-                                    "TokenEndpointQueryParameters": {},
-                                    "Scope": "https://graph.microsoft.com/.default"
+                                    "tokenEndpointQueryParameters": {},
+                                    "scope": "https://graph.microsoft.com/.default"
                                 },
                                 "request": {
                                     "apiEndpoint": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests",
