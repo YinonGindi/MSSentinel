@@ -62,13 +62,13 @@
         "_solutionVersion": "1.0.0",
         "_solutionAuthor": "Yinon Gindi",
         "_packageIcon": "\u003cimg src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/Microsoft_logo.svg\" width=\"75px\" height=\"75px\"\u003e",
-        "_solutionId": "azuresentinel.azure-sentinel-solution-"intuneepmelevationrequests",
+        "_solutionId": "azuresentinel.azure-sentinel-solution-intuneepmelevationrequests",
         "dataConnectorVersionConnectorDefinition": "1.0.0",
         "dataConnectorVersionConnections": "1.0.0",
         "_solutionTier": "Community",
-        "_dataConnectorContentIdConnectorDefinition": ""EPMFetchElevationRequestsDefinition",
+        "_dataConnectorContentIdConnectorDefinition": "EPMFetchElevationRequestsDefinition",
         "dataConnectorTemplateNameConnectorDefinition": "[concat(variables('workspaceName'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnectorDefinition')))]",
-        "_dataConnectorContentIdConnections": ""EPMFetchElevationRequestsConnections",
+        "_dataConnectorContentIdConnections": "EPMFetchElevationRequestsConnections",
         "dataConnectorTemplateNameConnections": "[concat(variables('workspaceName'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnections')))]",
         "_logAnalyticsTableId1": "EPMElevationRequests_CL",
         "dataCollectionRuleName": "DCR-EPMElevationRequests",
@@ -283,7 +283,7 @@
                     "id": "IntuneEPMElevationRequests",
                     "title": "Intune EPM Elevation Requests",
                     "publisher": "Yinon Gindi",
-                    "descriptionMarkdown": "Intune Endpoint Privilege Management (EPM) Elevation Request connector ingests elevation request logs from Intune EPM.\n\nEPMElevationRequests_CL table with **24 columns** captures detailed activity across Intune EPM Elevation Requests.\n\n**Prerequisites:** Entra ID app with `DeviceManagementConfiguration.Read.All` application permission on Microsoft Graph.",
+                    "descriptionMarkdown": "Intune Endpoint Privilege Management (EPM) Elevation Request connector ingests elevation request logs from Intune EPM.\n\nEPMElevationRequests_CL table with **25 columns** captures detailed activity across Intune EPM Elevation Requests.\n\n**Prerequisites:** Entra ID app with `DeviceManagementConfiguration.Read.All` application permission on Microsoft Graph.",
                     "graphQueriesTableName": "EPMElevationRequests_CL",
                     "graphQueries": [
                         {
@@ -294,12 +294,12 @@
                     ],
                     "sampleQueries": [
                         {
-                            "description": "All Microsoft 365 Audit Events",
+                            "description": "All Intune EPM Elevation Requests",
                             "query": "EPMElevationRequests_CL\n| sort by TimeGenerated desc"
                         },
                         {
                             "description": "Events by Workload",
-                            "query": "EPMElevationRequests_CL\n| where status == "pending"\n| summarize Count = count() by requestedByUserPrincipalName\n"
+                            "query": "EPMElevationRequests_CL\n| where status == 'pending'\n| summarize Count = count() by requestedByUserPrincipalName\n"
                         }
                     ],
                     "dataTypes": [
@@ -416,7 +416,7 @@
                     "contentVersion": "1.0.0",
                     "parameters": {
                         "guidValue": {
-                            "defaultValue": "[[newGuid()]",
+                            "defaultValue": "[newGuid()]",
                             "type": "securestring"
                         },
                         "innerWorkspace": {
@@ -478,7 +478,7 @@
                             }
                         },
                         {
-                            "name": "[[concat(parameters('innerWorkspace'),'/Microsoft.SecurityInsights/','IntuneEPMElevationRequestsPolling', parameters('guidValue'))]",
+                            "name": "[concat(parameters('innerWorkspace'),'/Microsoft.SecurityInsights/','IntuneEPMElevationRequestsPolling', parameters('guidValue'))]",
                             "apiVersion": "2023-02-01-preview",
                             "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
                             "location": "[parameters('workspace-location')]",
@@ -488,34 +488,34 @@
                                 "dataType": "EPMElevationRequests_CL",
                                 "dcrConfig": {
                                     "streamName": "Custom-EPMElevationRequests",
-                                    "dataCollectionEndpoint": "[[parameters('dcrConfig').dataCollectionEndpoint]",
-                                    "dataCollectionRuleImmutableId": "[[parameters('dcrConfig').dataCollectionRuleImmutableId]"
+                                    "dataCollectionEndpoint": "[parameters('dcrConfig').dataCollectionEndpoint]",
+                                    "dataCollectionRuleImmutableId": "[parameters('dcrConfig').dataCollectionRuleImmutableId]"
                                 },
                                 "auth": {
                                     "type": "OAuth2",
-                                    "ClientId": "[[parameters('clientId')]",
-                                    "ClientSecret": "[[parameters('clientSecret')]",
+                                    "ClientId": "[parameters('clientId')]",
+                                    "ClientSecret": "[parameters('clientSecret')]",
                                     "GrantType": "client_credentials",
                                     "TokenEndpoint": "[concat('https://login.microsoftonline.com/', subscription().tenantId, '/oauth2/v2.0/token')]",
                                     "TokenEndpointHeaders": {
                                         "Content-Type": "application/x-www-form-urlencoded"
                                     },
                                     "TokenEndpointQueryParameters": {},
-                                    "Scope": "https://graph.microsoft.com"
+                                    "Scope": "https://graph.microsoft.com/.default"
                                 },
                                 "request": {
-                                    "apiEndpoint": "https://graph.microsoft.com/beta/deviceManagement/elevationRequest",
+                                    "apiEndpoint": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests",
                                     "httpMethod": "GET",
                                     "rateLimitQPS": 100,
                                     "queryWindowInMin": 1,
-                                    "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss",
+                                    "queryTimeFormat": "yyyy-MM-ddTHH:mm:ssZ",
                                     "retryCount": 3,
                                     "timeoutInSeconds": 60,
                                     "headers": {
                                         "Accept": "application/json"
                                     },
                                     "queryParameters": {
-                                        $filter": "requestLastModifiedDateTime ge {_QueryWindowStartTime}",
+                                        "$filter": "requestLastModifiedDateTime ge {_QueryWindowStartTime}",
                                         "$orderby": "requestLastModifiedDateTime desc"
 
                                     },
@@ -531,15 +531,6 @@
                                     "pagingType": "NextPageUrl",
                                     "nextPageParaName": "NextPageUri",
                                     "nextPageTokenJsonPath": "$['@odata.nextLink']"
-                                },
-                                "stepInfo": {
-                                    "stepType": "Nested",
-                                    "nextSteps": [
-                                        {
-                                            "stepId": "fetchContentData",
-                                            "stepPlaceholdersParsingKql": "source"
-                                        }
-                                    ]
                                 }
                             }
                         }
