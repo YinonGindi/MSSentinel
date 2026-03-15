@@ -1,46 +1,56 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "logicAppName": {
-      "type": "string",
-      "defaultValue": "EPM-FetchElevationRequests",
-      "metadata": {
-        "description": "Name of the Logic App."
-      }
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "defaultValue": "EPM-FetchElevationRequests",
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Logic App."
+            }
+        },
+        "dcrName": {
+            "defaultValue": "DCR-EPMElevationRequests",
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Data Collection Rule."
+            }
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "String",
+            "metadata": {
+                "description": "Azure region."
+            }
+        },
+        "workspace": {
+            "type": "String",
+            "metadata": {
+                "description": "Workspace name for Log Analytics where Microsoft Sentinel is setup"
+            }
+        },
+        "workspaceResourceGroup": {
+            "type": "String",
+            "metadata": {
+                "description": "Resource Group for Log Analytics where Microsoft Sentinel is setup"
+            }
+        },
+        "recurrenceIntervalHours": {
+            "defaultValue": 24,
+            "type": "Int",
+            "metadata": {
+                "description": "How often (in hours) the Logic App runs."
+            }
+        }
     },
-    "dcrName": {
-      "type": "string",
-      "defaultValue": "DCR-EPMElevationRequests",
-      "metadata": {
-        "description": "Name of the Data Collection Rule."
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Azure region."
-      }
-    },
-    "workspaceResourceId": {
-      "type": "string",
-      "metadata": {
-        "description": "Full resource ID of the Log Analytics workspace (e.g. /subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/...)."
-      }
-    },
-    "recurrenceIntervalHours": {
-      "type": "int",
-      "defaultValue": 24,
-      "metadata": {
-        "description": "How often (in hours) the Logic App runs."
-      }
-    }
-  },
-  "variables": {
-    "dcrStreamName": "Custom-EPMElevationRequests",
-    "monitoringMetricsPublisherRoleId": "3913510d-42f4-4e42-8a64-420c390055eb",
-    "columns": [
+    "variables": {
+        "dcrStreamName": "Custom-EPMElevationRequests",
+        "subscription": "[subscription().subscriptionId]",
+        "workspaceName": "[parameters('workspace')]",
+        "tableName": "EPMElevationRequests_CL",
+        "monitoringMetricsPublisherRoleId": "3913510d-42f4-4e42-8a64-420c390055eb",
+        "workspaceResourceId": "[resourceId(parameters('workspaceResourceGroup'), 'Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]",
+        "columns": [
             {
                 "name": "TimeGenerated",
                 "type": "datetime"
@@ -138,316 +148,314 @@
                 "type": "string"
             }
         ]
-  },
-  "resources": [
-    {
-      "type": "Microsoft.Insights/dataCollectionRules",
-      "apiVersion": "2023-03-11",
-      "name": "[parameters('dcrName')]",
-      "location": "[parameters('location')]",
-      "kind": "Direct",
-      "properties": {
-        "streamDeclarations": {
-          "Custom-EPMElevationRequests": {
-            "columns": [
-              { "name": "TimeGenerated", "type": "datetime" },
-              { "name": "id", "type": "string" },
-              { "name": "status", "type": "string" },
-              { "name": "requestedByUserId", "type": "string" },
-              { "name": "requestedByUserPrincipalName", "type": "string" },
-              { "name": "requestedOnDeviceId", "type": "string" },
-              { "name": "deviceName", "type": "string" },
-              { "name": "requestCreatedDateTime", "type": "datetime" },
-              { "name": "requestLastModifiedDateTime", "type": "datetime" },
-              { "name": "requestJustification", "type": "string" },
-              { "name": "requestExpiryDateTime", "type": "datetime" },
-              { "name": "fileName", "type": "string" },
-              { "name": "filePath", "type": "string" },
-              { "name": "fileHash", "type": "string" },
-              { "name": "fileDescription", "type": "string" },
-              { "name": "publisherName", "type": "string" },
-              { "name": "publisherCert", "type": "string" },
-              { "name": "productName", "type": "string" },
-              { "name": "productInternalName", "type": "string" },
-              { "name": "productVersion", "type": "string" },
-              { "name": "reviewCompletedByUserId", "type": "string" },
-              { "name": "reviewCompletedByUserPrincipalName", "type": "string" },
-              { "name": "reviewCompletedDateTime", "type": "datetime" },
-              { "name": "reviewerJustification", "type": "string" }
-            ]
-          }
-        },
-        "destinations": {
-          "logAnalytics": [
-            {
-              "workspaceResourceId": "[parameters('workspaceResourceId')]",
-              "name": "workspace"
-            }
-          ]
-        },
-        "dataFlows": [
-          {
-            "streams": [ "Custom-EPMElevationRequests" ],
-            "destinations": [ "workspace" ],
-            "transformKql": "source",
-            "outputStream": "Custom-EPMElevationRequests_CL"
-          }
-        ]
-      }
     },
-    {
-      "type": "Microsoft.Logic/workflows",
-      "apiVersion": "2019-05-01",
-      "name": "[parameters('logicAppName')]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName'))]"
-      ],
-      "identity": {
-        "type": "SystemAssigned"
-      },
-      "properties": {
-        "state": "Enabled",
-        "definition": {
-          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-          "contentVersion": "1.0.0.0",
-          "parameters": {},
-          "triggers": {
-            "Recurrence": {
-              "recurrence": {
-                "frequency": "Hour",
-                "interval": "[parameters('recurrenceIntervalHours')]"
-              },
-              "type": "Recurrence"
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces/tables",
+            "apiVersion": "2022-10-01",
+            "name": "[concat(variables('workspaceName'),'/EPMElevationRequests_CL')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "schema": {
+                    "name": "EPMElevationRequests_CL",
+                    "columns": "[variables('columns')]"
+                }
             }
-          },
-          "actions": {
-            "Initialize_Variables": {
-              "runAfter": {},
-              "type": "InitializeVariable",
-              "inputs": {
-                "variables":[
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2023-03-11",
+            "name": "[parameters('dcrName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces/tables', variables('workspaceName'), 'EPMElevationRequests_CL')]"
+            ],
+            "kind": "Direct",
+            "properties": {
+                "streamDeclarations": {
+                    "Custom-EPMElevationRequests": {
+                        "columns": "[variables('columns')]"
+                    }
+                },
+                "destinations": {
+                    "logAnalytics": [
                         {
-                            "name": "nextLink",
-                            "type": "string",
-                            "value": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests?$filter=requestLastModifiedDateTime ge @{formatDateTime(addMinutes(utcNow(), -5), 'yyyy-MM-ddTHH:mm:ssZ')}&$orderby=requestLastModifiedDateTime desc"
-                        },
-                        {
-                            "name": "allResults",
-                            "type": "array",
-                            "value": []
+                            "workspaceResourceId": "[variables('workspaceResourceId')]",
+                            "name": "workspace"
                         }
                     ]
-              }
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-EPMElevationRequests"
+                        ],
+                        "destinations": [
+                            "workspace"
+                        ],
+                        "transformKql": "source",
+                        "outputStream": "Custom-EPMElevationRequests_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2019-05-01",
+            "name": "[parameters('logicAppName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName'))]"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
             },
-            "Paginate_Through_Results": {
-                "actions": {
-                    "HTTP_-_Get_Elevation_Requests": {
-                        "type": "Http",
-                        "inputs": {
-                            "uri": "@{variables('nextLink')}",
-                            "method": "GET",
-                            "headers": {
-                                "ConsistencyLevel": "eventual"
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "triggers": {
+                        "Recurrence": {
+                            "recurrence": {
+                                "frequency": "Hour",
+                                "interval": "[parameters('recurrenceIntervalHours')]"
                             },
-                            "authentication": {
-                                "type": "ManagedServiceIdentity",
-                                "identity": "/subscriptions/28828676-9a43-49b0-a504-381897b25942/resourceGroups/Prod/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Sentinel-Bad-Boy",
-                                "audience": "https://graph.microsoft.com"
-                            }
+                            "type": "Recurrence"
                         }
                     },
-                    "Check_NextLink": {
-                        "actions": {
-                            "Set_NextLink": {
-                                "type": "SetVariable",
-                                "inputs": {
-                                    "name": "nextLink",
-                                    "value": "@{body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']}"
-                                }
+                    "actions": {
+                        "Initialize_Variables": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "nextLink",
+                                        "type": "string",
+                                        "value": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests?$filter=requestLastModifiedDateTime ge @{formatDateTime(addMinutes(utcNow(), -5000), 'yyyy-MM-ddTHH:mm:ssZ')}&$orderby=requestLastModifiedDateTime desc"
+                                    },
+                                    {
+                                        "name": "allResults",
+                                        "type": "array",
+                                        "value": []
+                                    }
+                                ]
                             }
                         },
-                        "runAfter": {
-                            "Set_Output_to_AllResults": [
-                                "Succeeded"
-                            ]
-                        },
-                        "else": {
+                        "Paginate_Through_Results": {
                             "actions": {
-                                "Clear_NextLink": {
+                                "HTTP_-_Get_Elevation_Requests": {
+                                    "type": "Http",
+                                    "inputs": {
+                                        "uri": "@{variables('nextLink')}",
+                                        "method": "GET",
+                                        "headers": {
+                                            "ConsistencyLevel": "eventual"
+                                        },
+                                        "authentication": {
+                                            "type": "ManagedServiceIdentity",
+                                            "audience": "https://graph.microsoft.com"
+                                        }
+                                    }
+                                },
+                                "Union_Outcome": {
+                                    "runAfter": {
+                                        "HTTP_-_Get_Elevation_Requests": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Compose",
+                                    "inputs": "@union(variables('allResults'),body('HTTP_-_Get_Elevation_Requests')?['value'])"
+                                },
+                                "Set_Output_to_AllResults": {
+                                    "runAfter": {
+                                        "Union_Outcome": [
+                                            "Succeeded"
+                                        ]
+                                    },
                                     "type": "SetVariable",
                                     "inputs": {
-                                        "name": "nextLink",
-                                        "value": "@trim(' ')"
+                                        "name": "allResults",
+                                        "value": "@outputs('Union_Outcome')"
                                     }
+                                },
+                                "Check_NextLink": {
+                                    "actions": {
+                                        "Set_NextLink": {
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "nextLink",
+                                                "value": "@{body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']}"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Set_Output_to_AllResults": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "else": {
+                                        "actions": {
+                                            "Clear_NextLink": {
+                                                "type": "SetVariable",
+                                                "inputs": {
+                                                    "name": "nextLink",
+                                                    "value": "@trim(' ')"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "expression": {
+                                        "and": [
+                                            {
+                                                "not": {
+                                                    "equals": [
+                                                        "@body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']",
+                                                        null
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "type": "If"
+                                }
+                            },
+                            "runAfter": {
+                                "Initialize_Variables": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "expression": "@equals(variables('nextLink'), trim(' '))",
+                            "limit": {
+                                "count": 100,
+                                "timeout": "PT1H"
+                            },
+                            "type": "Until"
+                        },
+                        "Flatten_Results": {
+                            "runAfter": {
+                                "Paginate_Through_Results": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Select",
+                            "inputs": {
+                                "from": "@variables('allResults')",
+                                "select": {
+                                    "TimeGenerated": "@item()?['requestCreatedDateTime']",
+                                    "id": "@item()?['id']",
+                                    "status": "@item()?['status']",
+                                    "requestedByUserId": "@item()?['requestedByUserId']",
+                                    "requestedByUserPrincipalName": "@item()?['requestedByUserPrincipalName']",
+                                    "requestedOnDeviceId": "@item()?['requestedOnDeviceId']",
+                                    "deviceName": "@item()?['deviceName']",
+                                    "requestCreatedDateTime": "@item()?['requestCreatedDateTime']",
+                                    "requestLastModifiedDateTime": "@item()?['requestLastModifiedDateTime']",
+                                    "requestJustification": "@item()?['requestJustification']",
+                                    "requestExpiryDateTime": "@item()?['requestExpiryDateTime']",
+                                    "fileName": "@item()?['applicationDetail']?['fileName']",
+                                    "filePath": "@item()?['applicationDetail']?['filePath']",
+                                    "fileHash": "@item()?['applicationDetail']?['fileHash']",
+                                    "fileDescription": "@item()?['applicationDetail']?['fileDescription']",
+                                    "publisherName": "@item()?['applicationDetail']?['publisherName']",
+                                    "publisherCert": "@item()?['applicationDetail']?['publisherCert']",
+                                    "productName": "@item()?['applicationDetail']?['productName']",
+                                    "productInternalName": "@item()?['applicationDetail']?['productInternalName']",
+                                    "productVersion": "@item()?['applicationDetail']?['productVersion']",
+                                    "reviewCompletedByUserId": "@item()?['reviewCompletedByUserId']",
+                                    "reviewCompletedByUserPrincipalName": "@item()?['reviewCompletedByUserPrincipalName']",
+                                    "reviewCompletedDateTime": "@item()?['reviewCompletedDateTime']",
+                                    "reviewerJustification": "@item()?['reviewerJustification']"
                                 }
                             }
                         },
-                        "expression": {
-                            "and": [
-                                {
-                                    "not": {
-                                        "equals": [
-                                            "@body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']",
-                                            null
+                        "Condition_-_Has_Results": {
+                            "runAfter": {
+                                "Flatten_Results": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "If",
+                            "expression": {
+                                "and": [
+                                    {
+                                        "greater": [
+                                            "@length(body('Flatten_Results'))",
+                                            0
                                         ]
                                     }
+                                ]
+                            },
+                            "actions": {
+                                "HTTP_Send_Data_to_Custom_Table": {
+                                    "type": "Http",
+                                    "inputs": {
+                                        "method": "POST",
+                                        "uri": "[concat(reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').endpoints.logsIngestion, '/dataCollectionRules/', reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').immutableId, '/streams/', variables('dcrStreamName'), '?api-version=2023-01-01')]",
+                                        "headers": {
+                                            "Content-Type": "application/json"
+                                        },
+                                        "body": "@body('Flatten_Results')",
+                                        "authentication": {
+                                            "type": "ManagedServiceIdentity",
+                                            "audience": "https://monitor.azure.com"
+                                        }
+                                    }
                                 }
-                            ]
-                        },
-                        "type": "If"
-                    },
-                    "Set_Output_to_AllResults": {
-                        "runAfter": {
-                            "Union_Outcome": [
-                                "Succeeded"
-                            ]
-                        },
-                        "type": "SetVariable",
-                        "inputs": {
-                            "name": "allResults",
-                            "value": "@outputs('Union_Outcome')"
+                            },
+                            "else": {
+                                "actions": {
+                                    "No_Results": {
+                                        "type": "Compose",
+                                        "inputs": "No elevation requests returned. Skipping ingestion."
+                                    }
+                                }
+                            }
                         }
                     },
-                    "Union_Outcome": {
-                        "runAfter": {
-                            "HTTP_-_Get_Elevation_Requests": [
-                                "Succeeded"
-                            ]
-                        },
-                        "type": "Compose",
-                        "inputs": "@union(variables('allResults'),body('HTTP_-_Get_Elevation_Requests')?['value'])"
-                    }
+                    "outputs": {}
                 },
-                "runAfter": {
-                    "Initialize_Variables": [
-                        "Succeeded"
-                    ]
-                },
-                "expression": "@equals(variables('nextLink'), trim(' '))",
-                "limit": {
-                    "count": 1001,
-                    "timeout": "PT1H"
-                },
-                "type": "Until"
-            },
-            "Flatten_Results": {
-              "runAfter": {
-                "Paginate_Through_Results": [ "Succeeded" ]
-              },
-              "type": "Select",
-              "inputs": {
-                "from": "@variables('allResults')",
-                "select": {
-                  "TimeGenerated": "@item()?['requestCreatedDateTime']",
-                  "id": "@item()?['id']",
-                  "status": "@item()?['status']",
-                  "requestedByUserId": "@item()?['requestedByUserId']",
-                  "requestedByUserPrincipalName": "@item()?['requestedByUserPrincipalName']",
-                  "requestedOnDeviceId": "@item()?['requestedOnDeviceId']",
-                  "deviceName": "@item()?['deviceName']",
-                  "requestCreatedDateTime": "@item()?['requestCreatedDateTime']",
-                  "requestLastModifiedDateTime": "@item()?['requestLastModifiedDateTime']",
-                  "requestJustification": "@item()?['requestJustification']",
-                  "requestExpiryDateTime": "@item()?['requestExpiryDateTime']",
-                  "fileName": "@item()?['applicationDetail']?['fileName']",
-                  "filePath": "@item()?['applicationDetail']?['filePath']",
-                  "fileHash": "@item()?['applicationDetail']?['fileHash']",
-                  "fileDescription": "@item()?['applicationDetail']?['fileDescription']",
-                  "publisherName": "@item()?['applicationDetail']?['publisherName']",
-                  "publisherCert": "@item()?['applicationDetail']?['publisherCert']",
-                  "productName": "@item()?['applicationDetail']?['productName']",
-                  "productInternalName": "@item()?['applicationDetail']?['productInternalName']",
-                  "productVersion": "@item()?['applicationDetail']?['productVersion']",
-                  "reviewCompletedByUserId": "@item()?['reviewCompletedByUserId']",
-                  "reviewCompletedByUserPrincipalName": "@item()?['reviewCompletedByUserPrincipalName']",
-                  "reviewCompletedDateTime": "@item()?['reviewCompletedDateTime']",
-                  "reviewerJustification": "@item()?['reviewerJustification']"
-                }
-              }
-            },
-            "Condition_-_Has_Results": {
-              "runAfter": {
-                "Flatten_Results": [ "Succeeded" ]
-              },
-              "type": "If",
-              "expression": {
-                "and": [
-                  {
-                    "greater": [
-                      "@length(body('Flatten_Results'))",
-                      0
-                    ]
-                  }
-                ]
-              },
-              "actions": {
-                "HTTP_Send_Data_to_Custom_Table": {
-                  "type": "Http",
-                  "inputs": {
-                    "method": "POST",
-                    "uri": "@{variables('LogsIngestionURL')}/dataCollectionRules/@{variables('DCRImmutableID')}/streams/@{variables('DCRStreamName')}?api-version=2023-01-01",
-                    "headers": {
-                      "Content-Type": "application/json"
-                    },
-                    "body": "@body('Flatten_Results')",
-                    "authentication": {
-                      "type": "ManagedServiceIdentity",
-                      "audience": "https://monitor.azure.com"
-                    }
-                  }
-                }
-              },
-              "else": {
-                "actions": {
-                  "No_Results": {
-                    "type": "Compose",
-                    "inputs": "No elevation requests returned. Skipping ingestion."
-                  }
-                }
-              }
+                "parameters": {}
             }
-          },
-          "outputs": {}
         },
-        "parameters": {}
-      }
-    },
-    {
-      "type": "Microsoft.Insights/dataCollectionRules/providers/roleAssignments",
-      "apiVersion": "2022-04-01",
-      "name": "[concat(parameters('dcrName'), '/Microsoft.Authorization/', guid(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), variables('monitoringMetricsPublisherRoleId')))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName'))]",
-        "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
-      ],
-      "properties": {
-        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('monitoringMetricsPublisherRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'full').identity.principalId]",
-        "principalType": "ServicePrincipal"
-      }
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2022-04-01",
+            "name": "[guid(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), variables('monitoringMetricsPublisherRoleId'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName'))]",
+                "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('monitoringMetricsPublisherRoleId'))]",
+                "principalId": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            },
+            "scope": "[concat('Microsoft.Insights/dataCollectionRules/', parameters('dcrName'))]"
+        }
+    ],
+    "outputs": {
+        "logicAppName": {
+            "type": "String",
+            "value": "[parameters('logicAppName')]"
+        },
+        "managedIdentityPrincipalId": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'full').identity.principalId]"
+        },
+        "dcrId": {
+            "type": "String",
+            "value": "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName'))]"
+        },
+        "dcrImmutableId": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').immutableId]"
+        },
+        "logsIngestionEndpoint": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').endpoints.logsIngestion]"
+        }
     }
-  ],
-  "outputs": {
-    "logicAppName": {
-      "type": "string",
-      "value": "[parameters('logicAppName')]"
-    },
-    "managedIdentityPrincipalId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'full').identity.principalId]"
-    },
-    "dcrId": {
-      "type": "string",
-      "value": "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName'))]"
-    },
-    "dcrImmutableId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').immutableId]"
-    },
-    "logsIngestionEndpoint": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').endpoints.logsIngestion]"
-    }
-  }
 }
