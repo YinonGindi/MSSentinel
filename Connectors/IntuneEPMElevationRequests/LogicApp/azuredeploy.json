@@ -11,7 +11,7 @@
     },
     "dcrName": {
       "type": "string",
-      "defaultValue": "EPMElevationRequests-dcr",
+      "defaultValue": "DCR-EPMElevationRequests",
       "metadata": {
         "description": "Name of the Data Collection Rule."
       }
@@ -39,7 +39,105 @@
   },
   "variables": {
     "dcrStreamName": "Custom-EPMElevationRequests",
-    "monitoringMetricsPublisherRoleId": "3913510d-42f4-4e42-8a64-420c390055eb"
+    "monitoringMetricsPublisherRoleId": "3913510d-42f4-4e42-8a64-420c390055eb",
+    "columns": [
+            {
+                "name": "TimeGenerated",
+                "type": "datetime"
+            },
+            {
+                "name": "id",
+                "type": "string"
+            },
+            {
+                "name": "status",
+                "type": "string"
+            },
+            {
+                "name": "requestedByUserId",
+                "type": "string"
+            },
+            {
+                "name": "requestedByUserPrincipalName",
+                "type": "string"
+            },
+            {
+                "name": "requestedOnDeviceId",
+                "type": "string"
+            },
+            {
+                "name": "deviceName",
+                "type": "string"
+            },
+            {
+                "name": "requestCreatedDateTime",
+                "type": "datetime"
+            },
+            {
+                "name": "requestLastModifiedDateTime",
+                "type": "datetime"
+            },
+            {
+                "name": "requestJustification",
+                "type": "string"
+            },
+            {
+                "name": "requestExpiryDateTime",
+                "type": "datetime"
+            },
+            {
+                "name": "fileName",
+                "type": "string"
+            },
+            {
+                "name": "filePath",
+                "type": "string"
+            },
+            {
+                "name": "fileHash",
+                "type": "string"
+            },
+            {
+                "name": "fileDescription",
+                "type": "string"
+            },
+            {
+                "name": "publisherName",
+                "type": "string"
+            },
+            {
+                "name": "publisherCert",
+                "type": "string"
+            },
+            {
+                "name": "productName",
+                "type": "string"
+            },
+            {
+                "name": "productInternalName",
+                "type": "string"
+            },
+            {
+                "name": "productVersion",
+                "type": "string"
+            },
+            {
+                "name": "reviewCompletedByUserId",
+                "type": "string"
+            },
+            {
+                "name": "reviewCompletedByUserPrincipalName",
+                "type": "string"
+            },
+            {
+                "name": "reviewCompletedDateTime",
+                "type": "datetime"
+            },
+            {
+                "name": "reviewerJustification",
+                "type": "string"
+            }
+        ]
   },
   "resources": [
     {
@@ -124,152 +222,114 @@
             }
           },
           "actions": {
-            "Initialize_NextLink": {
+            "Initialize_Variables": {
               "runAfter": {},
               "type": "InitializeVariable",
               "inputs": {
-                "variables": [
-                  {
-                    "name": "nextLink",
-                    "type": "string",
-                    "value": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests"
-                  }
-                ]
-              }
-            },
-            "Initialize_AllResults": {
-              "runAfter": {
-                "Initialize_NextLink": [ "Succeeded" ]
-              },
-              "type": "InitializeVariable",
-              "inputs": {
-                "variables": [
-                  {
-                    "name": "allResults",
-                    "type": "array",
-                    "value": []
-                  }
-                ]
-              }
-            },
-            "Initialize_LogsIngestionURL": {
-              "runAfter": {},
-              "type": "InitializeVariable",
-              "inputs": {
-                "variables": [
-                  {
-                    "name": "LogsIngestionURL",
-                    "type": "string",
-                    "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').endpoints.logsIngestion]"
-                  }
-                ]
-              }
-            },
-            "Initialize_DCRStreamName": {
-              "runAfter": {
-                "Initialize_LogsIngestionURL": [ "Succeeded" ]
-              },
-              "type": "InitializeVariable",
-              "inputs": {
-                "variables": [
-                  {
-                    "name": "DCRStreamName",
-                    "type": "string",
-                    "value": "[variables('dcrStreamName')]"
-                  }
-                ]
-              }
-            },
-            "Initialize_DCRImmutableID": {
-              "runAfter": {
-                "Initialize_DCRStreamName": [ "Succeeded" ]
-              },
-              "type": "InitializeVariable",
-              "inputs": {
-                "variables": [
-                  {
-                    "name": "DCRImmutableID",
-                    "type": "string",
-                    "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dcrName')), '2023-03-11').immutableId]"
-                  }
-                ]
+                "variables":[
+                        {
+                            "name": "nextLink",
+                            "type": "string",
+                            "value": "https://graph.microsoft.com/beta/deviceManagement/elevationRequests?$filter=requestLastModifiedDateTime ge @{formatDateTime(addMinutes(utcNow(), -5), 'yyyy-MM-ddTHH:mm:ssZ')}&$orderby=requestLastModifiedDateTime desc"
+                        },
+                        {
+                            "name": "allResults",
+                            "type": "array",
+                            "value": []
+                        }
+                    ]
               }
             },
             "Paginate_Through_Results": {
-              "runAfter": {
-                "Initialize_AllResults": [ "Succeeded" ]
-              },
-              "type": "Until",
-              "expression": "@equals(variables('nextLink'), '')",
-              "limit": {
-                "count": 100,
-                "timeout": "PT1H"
-              },
-              "actions": {
-                "HTTP_-_Get_Elevation_Requests": {
-                  "runAfter": {},
-                  "type": "Http",
-                  "inputs": {
-                    "method": "GET",
-                    "uri": "@{variables('nextLink')}",
-                    "headers": {
-                      "ConsistencyLevel": "eventual"
-                    },
-                    "authentication": {
-                      "type": "ManagedServiceIdentity",
-                      "audience": "https://graph.microsoft.com"
-                    }
-                  }
-                },
-                "Append_Page_to_Results": {
-                  "runAfter": {
-                    "HTTP_-_Get_Elevation_Requests": [ "Succeeded" ]
-                  },
-                  "type": "AppendToArrayVariable",
-                  "inputs": {
-                    "name": "allResults",
-                    "value": "@body('HTTP_-_Get_Elevation_Requests')?['value']"
-                  }
-                },
-                "Check_NextLink": {
-                  "runAfter": {
-                    "Append_Page_to_Results": [ "Succeeded" ]
-                  },
-                  "type": "If",
-                  "expression": {
-                    "and": [
-                      {
-                        "not": {
-                          "equals": [
-                            "@body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']",
-                            null
-                          ]
+                "actions": {
+                    "HTTP_-_Get_Elevation_Requests": {
+                        "type": "Http",
+                        "inputs": {
+                            "uri": "@{variables('nextLink')}",
+                            "method": "GET",
+                            "headers": {
+                                "ConsistencyLevel": "eventual"
+                            },
+                            "authentication": {
+                                "type": "ManagedServiceIdentity",
+                                "identity": "/subscriptions/28828676-9a43-49b0-a504-381897b25942/resourceGroups/Prod/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Sentinel-Bad-Boy",
+                                "audience": "https://graph.microsoft.com"
+                            }
                         }
-                      }
-                    ]
-                  },
-                  "actions": {
-                    "Set_NextLink": {
-                      "type": "SetVariable",
-                      "inputs": {
-                        "name": "nextLink",
-                        "value": "@{body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']}"
-                      }
-                    }
-                  },
-                  "else": {
-                    "actions": {
-                      "Clear_NextLink": {
+                    },
+                    "Check_NextLink": {
+                        "actions": {
+                            "Set_NextLink": {
+                                "type": "SetVariable",
+                                "inputs": {
+                                    "name": "nextLink",
+                                    "value": "@{body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']}"
+                                }
+                            }
+                        },
+                        "runAfter": {
+                            "Set_Output_to_AllResults": [
+                                "Succeeded"
+                            ]
+                        },
+                        "else": {
+                            "actions": {
+                                "Clear_NextLink": {
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                        "name": "nextLink",
+                                        "value": "@trim(' ')"
+                                    }
+                                }
+                            }
+                        },
+                        "expression": {
+                            "and": [
+                                {
+                                    "not": {
+                                        "equals": [
+                                            "@body('HTTP_-_Get_Elevation_Requests')?['@odata.nextLink']",
+                                            null
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "type": "If"
+                    },
+                    "Set_Output_to_AllResults": {
+                        "runAfter": {
+                            "Union_Outcome": [
+                                "Succeeded"
+                            ]
+                        },
                         "type": "SetVariable",
                         "inputs": {
-                          "name": "nextLink",
-                          "value": ""
+                            "name": "allResults",
+                            "value": "@outputs('Union_Outcome')"
                         }
-                      }
+                    },
+                    "Union_Outcome": {
+                        "runAfter": {
+                            "HTTP_-_Get_Elevation_Requests": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Compose",
+                        "inputs": "@union(variables('allResults'),body('HTTP_-_Get_Elevation_Requests')?['value'])"
                     }
-                  }
-                }
-              }
+                },
+                "runAfter": {
+                    "Initialize_Variables": [
+                        "Succeeded"
+                    ]
+                },
+                "expression": "@equals(variables('nextLink'), trim(' '))",
+                "limit": {
+                    "count": 1001,
+                    "timeout": "PT1H"
+                },
+                "type": "Until"
             },
             "Flatten_Results": {
               "runAfter": {
