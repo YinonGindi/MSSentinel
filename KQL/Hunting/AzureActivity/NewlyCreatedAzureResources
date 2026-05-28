@@ -1,0 +1,45 @@
+let timeframe = ago(1d);
+let Deployments =
+AzureActivity
+| where TimeGenerated >= timeframe
+| where OperationNameValue =~ "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE"
+| where ActivityStatusValue == "Success"
+| extend ResourceId=coalesce(ResourceId,_ResourceId)
+| summarize DeploymentTime=min(TimeGenerated)
+by
+CorrelationId,
+DeploymentResourceGroup = ResourceGroup,
+DeploymentName = tostring(split(ResourceId, "/")[-1]),
+DeploymentCaller = Caller,
+DeploymentCallerIP= CallerIpAddress;
+AzureActivity
+| where TimeGenerated >= timeframe
+| where OperationNameValue endswith "write"
+| where ActivityStatusValue == "Success"
+| extend ResourceId=coalesce(ResourceId,_ResourceId)
+| where CorrelationId in (Deployments | project CorrelationId)
+| where OperationNameValue !~ "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE"
+| extend ResourceType=tostring(split(ResourceId, "/")[-2]),name=tostring(Properties_d.resource)
+| summarize
+data = make_set(
+bag_pack(
+"ResourceType", ResourceType,
+"ResourceName", name
+)
+)
+by CorrelationId
+| project
+data,
+CorrelationId
+| join kind=inner Deployments on CorrelationId
+| extend Data=strcat_array(data,', ')
+| extend DeploymentCallerIPLocation=geo_info_from_ip_address(DeploymentCallerIP)
+| project DeploymentTime,
+DeploymentCaller,
+DeploymentName,
+DeploymentCallerIP,
+DeploymentCallerIPLocation=DeploymentCallerIPLocation.country,
+DeploymentResourceGroup,
+Data=replace_regex(Data,'}|{|\"',''),
+ResourceCounter=array_length(data),
+CorrelationId
