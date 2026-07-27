@@ -48,3 +48,7 @@ If the button above doesn't work, use this direct deployment URL:
 
 ```text
 https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMicrosoft_Sentinel%2Fmain%2FConnectors%2FM365AdminAudit%2FAdminAudit.json
+
+## Credit
+
+Based on the [Microsoft 365 Audit General and DLP](https://github.com/Azure/Azure-Sentinel/tree/master/Solutions/Microsoft%20365%20Audit%20General%20and%20DLP) solution from the [Azure/Azure-Sentinel](https://github.com/Azure/Azure-Sentinel) repository.
