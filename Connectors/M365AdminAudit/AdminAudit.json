@@ -1518,7 +1518,7 @@
                     "destinations": [
                       "clv2ws1"
                     ],
-                    "transformKql": "source | where RecordType in~ ('UnifiedAppManagement','M365AdminCenter')",
+                    "transformKql": "source | where Workload in~ ('UnifiedAppManagement','M365AdminCenter')",
                     "outputStream": "Custom-M365AdminAudit_CL"
                   }
                 ]
