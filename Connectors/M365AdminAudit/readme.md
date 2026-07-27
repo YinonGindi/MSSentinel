@@ -2,11 +2,11 @@
 
 Deploy the **Intune EPM Elevation Requests** CCF connector for **Microsoft Sentinel** directly from this repository.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FConnectors%2FIntuneEPMElevationRequests%2FCCF%2Fintuneepmelevationrequests.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMSSentinel%2Fmain%2FConnectors%2FM365AdminAudit%2FAdminAudit.json)
 
 ## ARM template
 
-- **Template file:** [`intuneepmelevationrequests.json`](https://github.com/YinonGindi/MSSentinel/blob/main/Connectors/IntuneEPMElevationRequests/CCF/intuneepmelevationrequests.json)
+- **Template file:** [`intuneepmelevationrequests.json`](https://github.com/YinonGindi/MSSentinel/blob/main/Connectors/M365AdminAudit/AdminAudit.json)
 - **Raw template URL:** `https://raw.githubusercontent.com/YinonGindi/MSSentinel/main/Connectors/IntuneEPMElevationRequests/CCF/intuneepmelevationrequests.json`
 
 ## What this deploys
