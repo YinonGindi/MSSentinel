@@ -3138,9 +3138,9 @@
       "properties": {
         "connectorUiConfig": {
           "id": "M365AdminAuditlCCFDefinition",
-          "title": "Microsoft 365 Audit.General",
-          "publisher": "Marko Lauren",
-          "descriptionMarkdown": "Microsoft 365 Audit.General connector ingests M365 Admin Audit from the Office 365 Management Activity API.\n\nData is ingested to a custom **M365AdminAudit_CL** table with **321 columns** supporting all Office 365 record types and workloads.\n\n**Prerequisites:** Entra ID app with Office 365 Management API permissions and Audit.General subscription.",
+          "title": "Microsoft 365 Admin Audit",
+          "publisher": "Yinon Gindi",
+          "descriptionMarkdown": "Microsoft 365 Admin Audit connector ingests M365 Admin Audit from the Office 365 Management Activity API.\n\nData is ingested to a custom **M365AdminAudit_CL** table with **321 columns** supporting all Office 365 record types and workloads.\n\n**Prerequisites:** Entra ID app with Office 365 Management API permissions and Audit.General subscription.",
           "graphQueriesTableName": "M365AdminAudit_CL",
           "graphQueries": [
             {
@@ -3246,7 +3246,7 @@
           "kind": "Solution"
         },
         "author": {
-          "name": "Marko Lauren"
+          "name": "Yinon Gindi"
         },
         "support": {
           "name": "Partner",
