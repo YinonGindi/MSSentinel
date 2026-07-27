@@ -50,9 +50,9 @@
     "_solutionId": "[variables('solutionId')]",
     "workspaceResourceId": "[resourceId('microsoft.OperationalInsights/Workspaces', parameters('workspace'))]",
     "dataConnectorCCPVersion": "1.0.0",
-    "_dataConnectorContentIdConnectorDefinition1": "M365AuditGeneralCCPDefinition",
+    "_dataConnectorContentIdConnectorDefinition1": "M365AdminAuditlCCFDefinition",
     "dataConnectorTemplateNameConnectorDefinition1": "[concat(parameters('workspace'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnectorDefinition1')))]",
-    "_dataConnectorContentIdConnections1": "M365AuditGeneralCCPDefinitionConnections",
+    "_dataConnectorContentIdConnections1": "M365AdminAuditlCCFDefinitionConnections",
     "dataConnectorTemplateNameConnections1": "[concat(parameters('workspace'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnections1')))]",
     "dataCollectionEndpointId1": "[concat('/subscriptions/',parameters('subscription'),'/resourceGroups/',parameters('resourceGroupName'),'/providers/Microsoft.Insights/dataCollectionEndpoints/',parameters('workspace'))]",
     "blanks": "[replace('b', 'b', '')]",
@@ -85,7 +85,7 @@
               "kind": "Customizable",
               "properties": {
                 "connectorUiConfig": {
-                  "id": "M365AuditGeneralCCPDefinition",
+                  "id": "M365AdminAuditlCCFDefinition",
                   "title": "Microsoft 365 Admin Audit",
                   "publisher": "Yinon Gindi",
                   "descriptionMarkdown": "Microsoft 365 Admin Audit connector ingests M365 Admin Audit from the Office 365 Management Activity API.\n\nData is ingested to a custom **M365AdminAudit_CL** table with **321 columns** supporting all Office 365 record types and workloads.\n\n**Prerequisites:** Entra ID app with Office 365 Management API permissions and Audit.General subscription.",
@@ -199,7 +199,7 @@
                 "support": {
                   "name": "Partner",
                   "tier": "Partner",
-                  "link": ""
+                  "link": "https://github.com/YinonGindi/Microsoft_Sentinel/tree/main/Connectors/M365AdminAudit"
                 },
                 "dependencies": {
                   "criteria": [
@@ -3137,7 +3137,7 @@
       "kind": "Customizable",
       "properties": {
         "connectorUiConfig": {
-          "id": "M365AuditGeneralCCPDefinition",
+          "id": "M365AdminAuditlCCFDefinition",
           "title": "Microsoft 365 Audit.General",
           "publisher": "Marko Lauren",
           "descriptionMarkdown": "Microsoft 365 Audit.General connector ingests M365 Admin Audit from the Office 365 Management Activity API.\n\nData is ingested to a custom **M365AdminAudit_CL** table with **321 columns** supporting all Office 365 record types and workloads.\n\n**Prerequisites:** Entra ID app with Office 365 Management API permissions and Audit.General subscription.",
@@ -3251,7 +3251,7 @@
         "support": {
           "name": "Partner",
           "tier": "Partner",
-          "link": ""
+          "link": "https://github.com/YinonGindi/Microsoft_Sentinel/tree/main/Connectors/M365AdminAudit"
         },
         "dependencies": {
           "criteria": [
@@ -3344,7 +3344,7 @@
                 "support": {
                   "name": "Partner",
                   "tier": "Partner",
-                  "link": ""
+                  "link": "https://github.com/YinonGindi/Microsoft_Sentinel/tree/main/Connectors/M365AdminAudit"
                 }
               }
             },
@@ -3355,7 +3355,7 @@
               "location": "[parameters('workspace-location')]",
               "kind": "RestApiPoller",
               "properties": {
-                "connectorDefinitionName": "M365AuditGeneralCCPDefinition",
+                "connectorDefinitionName": "M365AdminAuditlCCFDefinition",
                 "dataType": "M365AdminAudit_CL",
                 "dcrConfig": {
                   "streamName": "Custom-M365AuditGeneralInput",
@@ -3470,7 +3470,7 @@
         "support": {
           "name": "Partner",
           "tier": "Partner",
-          "link": ""
+          "link": "https://github.com/YinonGindi/Microsoft_Sentinel/tree/main/Connectors/M365AdminAudit"
         },
         "dependencies": {
           "operator": "AND",
