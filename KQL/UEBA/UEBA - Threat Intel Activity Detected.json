@@ -1,0 +1,86 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/526f8c05-5a9a-41a7-b8b5-4513aa2a9534')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/526f8c05-5a9a-41a7-b8b5-4513aa2a9534')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UEBA - Threat Intel Activity Detected",
+                "description": "Detect when threat intelligence alert raised by Microsoft Sentinel user entity and behavior analytics (UEBA)",
+                "severity": "Low",
+                "enabled": true,
+                "query": "BehaviorAnalytics\r\n| where ingestion_time() > ago(5m)\r\n| where isnotempty(DevicesInsights.ThreatIntelIndicatorType) and InvestigationPriority > 0\r\n| where ActivityType == 'LogOn'\r\n| extend Description=strcat(UserPrincipalName, case(ActivityType == 'FailedLogOn', ' failed to login ', ActivityType == 'LogOn', ' successfully login ', tolower(ActivityType)), ' from ', SourceIPAddress, ' which was flagged as suspicous by Microsoft Sentinel UEBA due to ', tolower(DevicesInsights.ThreatIntelIndicatorType))",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT8M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T1078"
+                ],
+                "subTechniques": [
+                    "T1078.004"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDescriptionFormat": "{{Description}} ",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserPrincipalName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIPAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
