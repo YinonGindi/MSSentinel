@@ -1,0 +1,89 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b77846b4-9f4c-42e0-af73-da6e6e2c8c84')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b77846b4-9f4c-42e0-af73-da6e6e2c8c84')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Azure - Multiple VM Modified by Unusual User",
+                "description": "Detects when at least 5 virtual machines are created, deleted, or deallocated within 5 minutes by a user who has been active but has not performed any of these actions in the past 14 days on Azure",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let Actions=dynamic(['MICROSOFT.COMPUTE/VIRTUALMACHINES/DEALLOCATE/ACTION', 'MICROSOFT.COMPUTE/VIRTUALMACHINES/POWEROFF/ACTION','MICROSOFT.COMPUTE/VIRTUALMACHINES/WRITE','Microsoft.Compute/snapshots/delete','Microsoft.Compute/disks/delete','Microsoft.Compute/disks/write']);\r\nAzureActivity\r\n| where TimeGenerated > ago(1h)\r\n| where OperationNameValue in~ (Actions)\r\n| where ActivityStatus startswith 'succ'\r\n| where Caller !in (AzureActivity| where TimeGenerated between (ago(14d) .. ago(1h))| where OperationNameValue in~ (Actions)| where ActivityStatus startswith 'succ'| distinct Caller)\r\n| summarize EndTime=max(TimeGenerated), StartTime=min(TimeGenerated), Resources=make_set(Resource,100),CorrelationId=max(CorrelationId),CallerIpAddresses=take_anyif(CallerIpAddress,isnotempty( CallerIpAddress)) by Caller, bin(TimeGenerated, 5m), OperationNameValue\r\n| extend ResourcesCounter=array_length(Resources)\r\n| where ResourcesCounter > 5\r\n| extend Description=strcat(Caller,' has performed ',OperationNameValue,' on ',ResourcesCounter,' VMs, which is anomalous for this user over the past 14 days.')",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "P14D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1529",
+                    "T1496"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDescriptionFormat": "{{Description}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Caller"
+                            },
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "Caller"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "CallerIpAddresses"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
