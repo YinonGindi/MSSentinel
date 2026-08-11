@@ -1,0 +1,101 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/82aab37c-67eb-4964-b5e5-34006931ef90')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/82aab37c-67eb-4964-b5e5-34006931ef90')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UEBA - Azure VM Suspicious Command/Extension Activity",
+                "description": "Detects potentially suspicious Azure VM run command executions and extension installations based on anomalous behavioral indicators identified by Microsoft Sentinel UEBA",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "BehaviorAnalytics\r\n| where ingestion_time() > ago(5m)\r\n| extend EventMessage=ActivityInsights.EventMessage\r\n| where EventMessage has_any ('runCommand/action', 'extensions/write')\r\n| where ActivityInsights has 'True'\r\n| extend SourceUser=coalesce(UserPrincipalName, tostring(UsersInsights.AccountObjectID))\r\n| mv-apply key = bag_keys(ActivityInsights) on (where tostring(ActivityInsights[tostring(key)]) == \"True\"\r\n    | project TrueKey = tostring(key))\r\n| summarize TrueKeys = make_list(TrueKey, 8), arg_max(TimeGenerated, *) by SourceRecordId\r\n| join kind=leftouter (AzureActivity\r\n    | where TimeGenerated > ago(1h)\r\n    | where OperationNameValue has_any ('runCommand/action', 'extensions/write')\r\n    | project SourceRecordId=_ItemId, ResourceName=tostring(split(_ResourceId, '/')[-1]),_ResourceId\r\n    | where isnotempty(ResourceName))\r\n    on SourceRecordId\r\n| extend Message=strcat(SourceUser, ' ', case(EventMessage endswith 'runCommand/action', strcat('executed run command on ', ResourceName, ' VM'), EventMessage endswith 'extensions/write', strcat('installed extension ', ResourceName, ' on Azure VM'), EventMessage), ' which Sentinel UEBA flagged for: ', strcat_array(TrueKeys, ', '))\r\n| project\r\n    TimeGenerated,\r\n    SourceIPAddress,\r\n    SourceIPLocation,\r\n    SourceUser,\r\n    EventMessage,\r\n    ResourceName,\r\n    TrueKeys,\r\n    ResourceId=_ResourceId,\r\n    Message,\r\n    SourceRecordId",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "LateralMovement"
+                ],
+                "techniques": [
+                    "T1651",
+                    "T1021"
+                ],
+                "subTechniques": [
+                    "T1021.008"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDescriptionFormat": "{{Message}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SourceUser"
+                            },
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "SourceUser"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIPAddress"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "AzureResource",
+                        "fieldMappings": [
+                            {
+                                "identifier": "ResourceId",
+                                "columnName": "ResourceId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
