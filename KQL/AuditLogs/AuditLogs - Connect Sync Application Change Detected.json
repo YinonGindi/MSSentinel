@@ -1,0 +1,104 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6d6e7699-035b-4235-8417-11f57a44a302')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6d6e7699-035b-4235-8417-11f57a44a302')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AuditLogs - Connect Sync Application Change Detected",
+                "description": "Detects changes to the Microsoft Entra Connect Sync provisioning application, including changes to its configured credentials on Microsoft Entra ID",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AuditLogs\r\n| where ingestion_time() > ago(5m)\r\n| where tostring(TargetResources[0].displayName) startswith \"ConnectSyncProvisioning_\"\r\n| where OperationName has_any (\"Add service principal\", \"Add application\", \"Update application\", \"Certificates and secrets management\")\r\n| mv-expand modifiedProperties = TargetResources[0].modifiedProperties\r\n| where tostring(modifiedProperties.displayName) == \"KeyDescription\"\r\n| extend oldValue=tostring(modifiedProperties.oldValue), newValue=tostring(modifiedProperties.newValue)\r\n| extend\r\n    oldValueCount=array_length(extract_all(@\"DisplayName=([^\\]]+)\", dynamic([1]), oldValue)),\r\n    newValueCount=array_length(extract_all(@\"DisplayName=([^\\]]+)\", dynamic([1]), newValue))\r\n| where newValueCount != oldValueCount\r\n| extend SourceUser=tostring(coalesce(Identity,InitiatedBy.user.userPrincipalName,InitiatedBy.app.servicePrincipalId)),App=tostring(TargetResources[0].displayName)\r\n| extend  SourceUserId = tostring(coalesce(InitiatedBy.user.id,InitiatedBy.app.id)), UpdatedUserPrincipalName = tostring(TargetResources.userPrincipalName), SourceIP=tostring(InitiatedBy.user.ipAddress) \r\n| where SourceUser != App\r\n| project\r\n    TimeGenerated,\r\n    SourceUser,\r\n    SourceIP,\r\n    SourceUserId,\r\n    OperationName,\r\n    App,\r\n    oldValue,\r\n    oldValueCount,\r\n    newValue,\r\n    newValueCount,\r\n    Message=strcat(coalesce(SourceUser,SourceUserId),' perfomed ',tolower(OperationName),' operation on ',App, ' from ',SourceIP),\r\n    CorrelationId",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT8M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence",
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1098",
+                    "T1078",
+                    "T1556"
+                ],
+                "subTechniques": [
+                    "T1098.003",
+                    "T1078.004",
+                    "T1556.007"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDescriptionFormat": "{{Message}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SourceUser"
+                            },
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "SourceUserId"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "CloudApplication",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "App"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

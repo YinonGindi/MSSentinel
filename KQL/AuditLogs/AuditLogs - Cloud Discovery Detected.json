@@ -1,0 +1,92 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2895ba8e-22e7-4213-b0eb-b7fe1c8abeff')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2895ba8e-22e7-4213-b0eb-b7fe1c8abeff')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AuditLogs - Cloud Discovery Detected",
+                "description": "Detects when a user performed discovery events on Microsoft Entra ID",
+                "severity": "Low",
+                "enabled": true,
+                "query": "AuditLogs\r\n| where ingestion_time() > ago(5m)\r\n| extend SourceUser=tostring(coalesce(Identity,InitiatedBy.user.userPrincipalName,InitiatedBy.app.servicePrincipalId))\r\n| where SourceUser !in ('Azure AD Cloud Sync')\r\n| where OperationName has_any ('Export', 'Download group members', 'Download Users', 'Download Devices')\r\n| extend  SourceUserId = tostring(coalesce(InitiatedBy.user.id,InitiatedBy.app.id)), UpdatedUserPrincipalName = tostring(TargetResources.userPrincipalName), SourceIP=tostring(InitiatedBy.user.ipAddress) \r\n| project TimeGenerated,\r\n          SourceUser,\r\n          SourceIP,\r\n          SourceUserId,\r\n          OperationName,\r\n          Category,\r\n          ResultDescription,\r\n          Result,\r\n          Description=strcat(SourceUser,' has ',iff(Result == 'success','successfully','failed'),' to ',tolower(OperationName),' with the reason: ',ResultDescription),\r\n          CorrelationId",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT8M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [
+                    "T1069",
+                    "T1087"
+                ],
+                "subTechniques": [
+                    "T1069.003",
+                    "T1087.004"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": false,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDescriptionFormat": "{{Description}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SourceUser"
+                            },
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "SourceUserId"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
