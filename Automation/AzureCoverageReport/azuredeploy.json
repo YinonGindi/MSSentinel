@@ -1,0 +1,562 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "title": "Azure Coverage Report",
+    "description": "Logic App that reports Microsoft Sentinel, Log Analytics and Microsoft Defender for Cloud coverage across Azure resources, and emails the result as an HTML summary with CSV and HTML attachments.",
+    "prerequisites": "The Logic App's system-assigned managed identity requires Reader and Security Reader at the scope you want reported. The Office 365 API connection must be authorized after deployment.",
+    "author": {
+      "name": "YinonGindi"
+    },
+    "support": {
+      "tier": "Community"
+    }
+  },
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "defaultValue": "Sentinel-AzureCoverageReport",
+      "metadata": {
+        "description": "Name of the Logic App resource."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for the Logic App and API connection."
+      }
+    },
+    "recipientEmail": {
+      "type": "string",
+      "metadata": {
+        "description": "Email address that receives the coverage report."
+      }
+    },
+    "emailSubject": {
+      "type": "string",
+      "defaultValue": "Azure Coverage Report",
+      "metadata": {
+        "description": "Subject line of the report email."
+      }
+    },
+    "office365ConnectionName": {
+      "type": "string",
+      "defaultValue": "office365-coveragereport",
+      "metadata": {
+        "description": "Name of the Office 365 API connection used to send the report."
+      }
+    },
+    "recurrenceFrequency": {
+      "type": "string",
+      "defaultValue": "Month",
+      "allowedValues": [
+        "Day",
+        "Week",
+        "Month"
+      ],
+      "metadata": {
+        "description": "How often the report runs."
+      }
+    },
+    "recurrenceInterval": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Number of frequency units between runs."
+      }
+    },
+    "recurrenceTimeZone": {
+      "type": "string",
+      "defaultValue": "UTC",
+      "metadata": {
+        "description": "Time zone used to evaluate the recurrence schedule."
+      }
+    },
+    "recurrenceStartTime": {
+      "type": "string",
+      "defaultValue": "2026-01-01T06:00:00",
+      "metadata": {
+        "description": "First scheduled run, in yyyy-MM-ddTHH:mm:ss format."
+      }
+    },
+    "subscriptionIds": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Subscription IDs to report on. Leave empty to query every subscription the managed identity can read."
+      }
+    },
+    "resourceTypes": {
+      "type": "array",
+      "defaultValue": [
+        "microsoft.apimanagement/service",
+        "microsoft.automation/automationaccounts",
+        "microsoft.cache/redis",
+        "microsoft.cognitiveservices/accounts",
+        "microsoft.compute/virtualmachines",
+        "microsoft.containerregistry/registries",
+        "microsoft.containerservice/managedclusters",
+        "microsoft.dbformariadb/servers",
+        "microsoft.dbformysql/flexibleservers",
+        "microsoft.dbformysql/servers",
+        "microsoft.dbforpostgresql/flexibleservers",
+        "microsoft.dbforpostgresql/servers",
+        "microsoft.documentdb/databaseaccounts",
+        "microsoft.insights/datacollectionrules",
+        "microsoft.keyvault/vaults",
+        "microsoft.logic/workflows",
+        "microsoft.machinelearningservices/workspaces",
+        "microsoft.network/applicationgateways",
+        "microsoft.network/azurefirewalls",
+        "microsoft.network/bastionhosts",
+        "microsoft.network/ddosprotectionplans",
+        "microsoft.network/frontdoors",
+        "microsoft.network/networksecuritygroups",
+        "microsoft.recoveryservices/vaults",
+        "microsoft.sql/servers",
+        "microsoft.sqlvirtualmachine/sqlvirtualmachines",
+        "microsoft.storage/storageaccounts",
+        "microsoft.synapse/workspaces",
+        "microsoft.web/sites"
+      ],
+      "metadata": {
+        "description": "Resource types included in the diagnostic-settings coverage check."
+      }
+    },
+    "logicAppState": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Deploy the Logic App enabled or disabled. Disabled is recommended so the connection and role assignments can be completed first."
+      }
+    }
+  },
+  "variables": {
+    "office365ApiId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/office365')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('office365ConnectionName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "displayName": "[parameters('office365ConnectionName')]",
+        "api": {
+          "id": "[variables('office365ApiId')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[parameters('logicAppName')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('office365ConnectionName'))]"
+      ],
+      "properties": {
+        "state": "[parameters('logicAppState')]",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "triggers": {
+            "Recurrence": {
+              "recurrence": {
+                "frequency": "[parameters('recurrenceFrequency')]",
+                "interval": "[parameters('recurrenceInterval')]",
+                "timeZone": "[parameters('recurrenceTimeZone')]",
+                "startTime": "[parameters('recurrenceStartTime')]"
+              },
+              "type": "Recurrence",
+              "conditions": []
+            }
+          },
+          "actions": {
+            "Initialize_variables": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "Settings",
+                    "type": "array"
+                  },
+                  {
+                    "name": "StartTime",
+                    "type": "string",
+                    "value": "@{utcNow()}"
+                  },
+                  {
+                    "name": "SkipToken",
+                    "type": "string"
+                  },
+                  {
+                    "name": "Resources",
+                    "type": "array"
+                  }
+                ]
+              }
+            },
+            "Send_an_email_(V2)": {
+              "runAfter": {
+                "MDC_Coverage": [
+                  "Succeeded"
+                ],
+                "Sentinel_Coverage": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['office365']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "To": "[parameters('recipientEmail')]",
+                  "Subject": "[parameters('emailSubject')]",
+                  "Body": "<div style=\"max-width:700px;margin:20px auto;background:#ffffff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);overflow:hidden;\">\n<div style=\"background:#0078D4;padding:20px;color:white;\">\n<h2 style=\"margin:0;\">Azure Coverage Report</h2>\n<p style=\"margin:5px 0 0 0;opacity:0.9;\">Resources monitored and protected</p>\n</div>\n\n<div style=\"padding:24px;\">\n<p>Hello Team,</p>\n\n<p>Attached to this email is a list of monitored resources from selected resource types and a status of Microsoft Defender for Cloud coverage.</p>\n\n<table style=\"width:100%;border-collapse:collapse;margin:20px 0;\">\n<tbody><tr>\n<td style=\"padding:12px;background:#f8f9fa;border-left:4px solid #56a82d;\">\n<strong>Resource monitored by Sentinel</strong><br>@{formatNumber(\n  mul(\n    div(\n      float(length(body('Filter_array_for_Sentinel'))),\nfloat(body('Get_all_Azure_Resources_using_Graph')?['totalRecords'])\n    ),\n    100\n  ),\n  '0.0'\n)}% Monitored\n</td>\n<td style=\"padding:12px;background:#f8f9fa;border-left:4px solid #0078D4;\">\n<strong>Resource monitored by LAW</strong><br>@{formatNumber(\n  mul(\n    div(\n      float(length(body('Filter_array_for_LAW'))),\nfloat(body('Get_all_Azure_Resources_using_Graph')?['totalRecords'])\n    ),\n    100\n  ),\n  '0.0'\n)}% Monitored\n</td>\n<td style=\"padding:12px;background:#f8f9fa;border-left:4px solid #FFB900;\">\n<strong>Microsoft Defender for Cloud Coverge</strong><br>\n@{body('Get_MDC_Status_using_Graph')?['data'][0]?['CoveragePercent']}%\n</td>\n<td style=\"padding:12px;background:#f8f9fa;border-left:4px solid #00B294;\">\n<strong>Execution Date</strong><br>\n@{formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss UTC')}\n</td>\n</tr>\n</tbody></table>\n\n<p>\nThis is an automated report by Logic App\non <strong>@{length(variables('Resources'))}</strong> resource for monitoring.\n<br>\nDone in @{concat(\n    string(\n        div(\n            div(sub(ticks(utcNow()), ticks(variables('StartTime'))),10000000),\n            60\n        )\n    ),\n    ' min ',\n    string(\n        mod(\n            div(sub(ticks(utcNow()), ticks(variables('StartTime'))),10000000),\n            60\n        )\n    ),\n    ' sec'\n)} \n</p>\n\n<p style=\"margin-top:24px;\">\nRegards,<br>\n<strong>Coverage Automation</strong>\n</p>\n</div>\n\n</div>\n",
+                  "Attachments": [
+                    {
+                      "Name": "Coverage.csv",
+                      "ContentBytes": "@base64(body('Create_CSV_table'))"
+                    },
+                    {
+                      "Name": "mdc.html",
+                      "ContentBytes": "@base64(outputs('Compose_MDC_HTML_report'))"
+                    }
+                  ],
+                  "Importance": "Normal"
+                },
+                "path": "/v2/Mail"
+              }
+            },
+            "Sentinel_Coverage": {
+              "actions": {
+                "Get_all_Sentinel_Workspaces": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2022-10-01",
+                    "method": "POST",
+                    "body": {
+                      "subscriptions": "[parameters('subscriptionIds')]",
+                      "query": "resources | where type =~ 'microsoft.operationsmanagement/solutions' | where name startswith 'SecurityInsights(' | extend id=replace_string(tolower(id),'microsoft.operationsmanagement/solutions/securityinsights(','microsoft.operationalinsights/workspaces/') | project id=substring(id,0, strlen(id)-1)"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://management.azure.com"
+                    }
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                },
+                "Convert_JSON_array_to_array": {
+                  "runAfter": {
+                    "Get_all_Sentinel_Workspaces": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@body('Get_all_Sentinel_Workspaces')?['data']",
+                    "select": "@item()?['id']"
+                  }
+                },
+                "For_each": {
+                  "foreach": "@body('Get_all_Azure_Resources_using_Graph')?['data']",
+                  "actions": {
+                    "Get_Settings": {
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "https://management.azure.com@{items('For_each')?['id']}/providers/Microsoft.Insights/diagnosticSettings?api-version=2021-05-01-preview",
+                        "method": "GET",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://management.azure.com"
+                        }
+                      },
+                      "runtimeConfiguration": {
+                        "contentTransfer": {
+                          "transferMode": "Chunked"
+                        }
+                      }
+                    },
+                    "Select_workspace_ids": {
+                      "runAfter": {
+                        "Get_Settings": [
+                          "Succeeded",
+                          "Failed"
+                        ]
+                      },
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@coalesce(body('Get_Settings')?['value'], json('[]'))",
+                        "select": "@toLower(coalesce(item()?['properties']?['workspaceId'], ''))"
+                      }
+                    },
+                    "Append_to_array_Settings": {
+                      "runAfter": {
+                        "Select_workspace_ids": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "Settings",
+                        "value": {
+                          "ResourceId": "@{items('For_each')?['id']}",
+                          "Name": "@{items('For_each')?['name']}",
+                          "Type": "@{last(split(items('For_each')?['type'],'/'))}",
+                          "ResourceGroup": "@{items('For_each')?['resourceGroup']}",
+                          "SubscriptionId": "@{items('For_each')?['subscriptionId']}",
+                          "SettingsCount": "@{length(coalesce(body('Get_Settings')?['value'], json('[]')))}",
+                          "Status": "@{if(equals(actions('Get_Settings')?['status'],'Failed'),'Error',if(greater(length(intersection(body('Select_workspace_ids'),body('Convert_JSON_array_to_array'))),0),'Sentinel',if(not(empty(join(body('Select_workspace_ids'),''))),'Monitored',if(greater(length(coalesce(body('Get_Settings')?['value'],json('[]'))),0),'Other','Not Monitored'))))}",
+                          "WorkspaceName": "@{if(greater(length(intersection(body('Select_workspace_ids'),body('Convert_JSON_array_to_array'))),0),last(split(first(intersection(body('Select_workspace_ids'),body('Convert_JSON_array_to_array'))),'/')),if(not(empty(join(body('Select_workspace_ids'),''))),last(split(last(sort(body('Select_workspace_ids'))),'/')),''))}"
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Convert_JSON_array_to_array": [
+                      "Succeeded"
+                    ],
+                    "Until": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Foreach",
+                  "runtimeConfiguration": {
+                    "concurrency": {
+                      "repetitions": 50
+                    }
+                  }
+                },
+                "Create_CSV_table": {
+                  "runAfter": {
+                    "For_each": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Table",
+                  "inputs": {
+                    "from": "@variables('Settings')",
+                    "format": "CSV"
+                  }
+                },
+                "Filter_array_for_Sentinel": {
+                  "runAfter": {
+                    "Create_CSV_table": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@variables('Settings')",
+                    "where": "@equals(item()?['Status'], 'Sentinel')"
+                  }
+                },
+                "Filter_array_for_LAW": {
+                  "runAfter": {
+                    "Create_CSV_table": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@variables('Settings')",
+                    "where": "@equals(item()?['Status'], 'Monitored')"
+                  }
+                },
+                "Until": {
+                  "actions": {
+                    "Get_all_Azure_Resources_using_Graph": {
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2022-10-01",
+                        "method": "POST",
+                        "body": {
+                          "options": {
+                            "$skipToken": "@{variables('SkipToken')}"
+                          },
+                          "subscriptions": "[parameters('subscriptionIds')]",
+                          "query": "[concat('resources | where type in (''', join(parameters('resourceTypes'), ''','''), ''') | project id,name,type,resourceGroup,subscriptionId')]"
+                        },
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://management.azure.com"
+                        }
+                      },
+                      "runtimeConfiguration": {
+                        "contentTransfer": {
+                          "transferMode": "Chunked"
+                        }
+                      }
+                    },
+                    "Merge_new_values_with_old_ones": {
+                      "runAfter": {
+                        "Get_all_Azure_Resources_using_Graph": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "Compose",
+                      "inputs": "@union(variables('Resources'),body('Get_all_Azure_Resources_using_Graph')?['data'])"
+                    },
+                    "Set_resources": {
+                      "runAfter": {
+                        "Merge_new_values_with_old_ones": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "Resources",
+                        "value": "@outputs('Merge_new_values_with_old_ones')"
+                      }
+                    },
+                    "Condition": {
+                      "actions": {
+                        "Set_SkipToken": {
+                          "type": "SetVariable",
+                          "inputs": {
+                            "name": "SkipToken",
+                            "value": "@body('Get_all_Azure_Resources_using_Graph')?['$skipToken']"
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Set_resources": [
+                          "Succeeded"
+                        ]
+                      },
+                      "else": {
+                        "actions": {
+                          "Set_SkipToken_as_Empty": {
+                            "type": "SetVariable",
+                            "inputs": {
+                              "name": "SkipToken",
+                              "value": "@null"
+                            }
+                          }
+                        }
+                      },
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@empty(body('Get_all_Azure_Resources_using_Graph')?['$skipToken'])",
+                              false
+                            ]
+                          }
+                        ]
+                      },
+                      "type": "If"
+                    }
+                  },
+                  "expression": "@empty(variables('SkipToken'))",
+                  "limit": {
+                    "count": 60,
+                    "timeout": "PT1H"
+                  },
+                  "type": "Until"
+                }
+              },
+              "runAfter": {
+                "Initialize_variables": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Scope"
+            },
+            "MDC_Coverage": {
+              "actions": {
+                "Get_MDC_Status_using_Graph": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2022-10-01",
+                    "method": "POST",
+                    "body": {
+                      "subscriptions": "[parameters('subscriptionIds')]",
+                      "query": "securityresources | where type =~ 'microsoft.security/pricings' | extend pricingTier = properties.pricingTier, subPlan = properties.subPlan | extend planSet = pack(name, level = case(isnotempty(subPlan),subPlan,pricingTier)) | summarize defenderPlans = make_bag(planSet) by subscriptionId | project subscriptionId, CloudPosture = defenderPlans.CloudPosture, VirtualMachines = defenderPlans.VirtualMachines, AppServices = defenderPlans.AppServices, SqlServers = defenderPlans.SqlServers, SqlServerVirtualMachines = defenderPlans.SqlServerVirtualMachines, OpenSourceRelationalDatabases = defenderPlans.OpenSourceRelationalDatabases, CosmosDB = defenderPlans.CosmosDbs, StorageAccounts = defenderPlans.StorageAccounts, Containers = defenderPlans.Containers, KeyVaults = defenderPlans.KeyVaults, Arm = defenderPlans.Arm | summarize totalSubs = count(), CSPM = countif(CloudPosture == 'Standard'), Servers = countif(VirtualMachines in ('P1','P2')), AppSrv = countif(AppServices == 'Standard'), SqlServers = countif(SqlServers == 'Standard'), SqlServerVirtualMachines = countif(SqlServerVirtualMachines == 'Standard'), OpenSourceRelationalDatabases = countif(OpenSourceRelationalDatabases == 'Standard'), CosmosDB = countif(CosmosDB == 'Standard'), StorageAccounts = countif(StorageAccounts in ('PerTransaction','DefenderForStorageV2','PerStorageAccount')), Containers = countif(Containers == 'Standard'), KeyVaults = countif(KeyVaults in ('PerKeyVault','PerTransaction')), Arm = countif(Arm in ('PerApiCall','PerSubscription')) | extend Covered = CSPM + Servers + AppSrv + SqlServers + SqlServerVirtualMachines + OpenSourceRelationalDatabases + CosmosDB + StorageAccounts + Containers + KeyVaults + Arm | extend TotalPossible = totalSubs * 11 | extend CoveragePercent = round(100.0 * Covered / TotalPossible, 2)"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://management.azure.com"
+                    }
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                },
+                "Compose_MDC_HTML_report": {
+                  "runAfter": {
+                    "Get_MDC_Status_using_Graph": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "<h2>Defender for Cloud Coverage by Azure Subscriptions</h2>\n\n<table style=\"width:100%;border-collapse:collapse;font-family:Segoe UI;\">\n    <tr>\n        <th style=\"text-align:left;padding:8px;\">Defender Plan</th>\n        <th style=\"text-align:left;padding:8px;\">Coverage</th>\n    </tr>\n\n    <!-- CSPM -->\n    <tr>\n        <td>Defender CSPM</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['CSPM']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['CSPM']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- Servers -->\n    <tr>\n        <td>Servers</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['Servers']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['Servers']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- App Services -->\n    <tr>\n        <td>App Services</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['AppSrv']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['AppSrv']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- SQL -->\n    <tr>\n        <td>SQL</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['SqlServers']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['SqlServers']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- SQL Server VM -->\n    <tr>\n        <td>SQL Server on Machines</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['SqlServerVirtualMachines']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:@{if(equals(body('Get_MDC_Status_using_Graph')?['data'][0]?['SqlServerVirtualMachines'],body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs']),'#6875f5','#f59e0b')};height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['SqlServerVirtualMachines']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- Open Source DB -->\n    <tr>\n        <td>Open-source Relational DBs</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['OpenSourceRelationalDatabases']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:@{if(equals(body('Get_MDC_Status_using_Graph')?['data'][0]?['OpenSourceRelationalDatabases'],body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs']),'#6875f5','#f59e0b')};height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['OpenSourceRelationalDatabases']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- CosmosDB -->\n    <tr>\n        <td>Cosmos DB</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['CosmosDB']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:@{if(equals(body('Get_MDC_Status_using_Graph')?['data'][0]?['CosmosDB'],body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs']),'#6875f5','#f59e0b')};height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['CosmosDB']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- Storage -->\n    <tr>\n        <td>Storage Accounts</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['StorageAccounts']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['StorageAccounts']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- Containers -->\n    <tr>\n        <td>Containers</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['Containers']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['Containers']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- Key Vault -->\n    <tr>\n        <td>Key Vaults</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['KeyVaults']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['KeyVaults']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n\n    <!-- ARM -->\n    <tr>\n        <td>Resource Manager</td>\n        <td>\n            <div style=\"background:#dfe3ff;height:24px;\">\n                <div style=\"width:@{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['Arm']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%;background:#6875f5;height:24px;color:white;padding-left:8px;\">\n                    @{formatNumber(mul(div(float(body('Get_MDC_Status_using_Graph')?['data'][0]?['Arm']),float(body('Get_MDC_Status_using_Graph')?['data'][0]?['totalSubs'])),100),'0.0')}%\n                </div>\n            </div>\n        </td>\n    </tr>\n</table>"
+                }
+              },
+              "runAfter": {
+                "Initialize_variables": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Scope"
+            }
+          },
+          "outputs": {},
+          "parameters": {
+            "$connections": {
+              "type": "Object",
+              "defaultValue": {}
+            }
+          }
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "office365": {
+                "id": "[variables('office365ApiId')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365ConnectionName'))]",
+                "connectionName": "[parameters('office365ConnectionName')]",
+                "connectionProperties": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "logicAppName": {
+      "type": "string",
+      "value": "[parameters('logicAppName')]"
+    },
+    "managedIdentityPrincipalId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '2019-05-01', 'full').identity.principalId]"
+    },
+    "office365ConnectionName": {
+      "type": "string",
+      "value": "[parameters('office365ConnectionName')]"
+    }
+  }
+}
