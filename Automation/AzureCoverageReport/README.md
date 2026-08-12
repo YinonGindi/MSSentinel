@@ -24,6 +24,12 @@ Every resource in scope is classified into one of five states:
 
 The report is delivered as an HTML email with two attachments: `Coverage.csv` (the full per-resource inventory) and `mdc.html` (a Defender for Cloud plan breakdown).
 
+## Sample Report
+
+<p align="center">
+  <img src="misc/emailscreenshot.png" alt="Coverage report email showing Sentinel, LAW and Defender for Cloud coverage percentages" width="750">
+</p>
+
 ## How It Works
 
 ```
@@ -89,22 +95,20 @@ Resource Graph returns at most 1,000 rows per call. The `Until` loop repeatedly 
 |---|---|---|---|
 | `logicAppName` | | `Sentinel-AzureCoverageReport` | Name of the Logic App resource |
 | `location` | | Resource group location | Azure region for the Logic App and API connection |
-| `recipientEmail` | ✅ | — | Email address that receives the coverage report |
+| `recipientEmail` | ✅ | — | Email address that receives the coverage report (prompted by the deploy button) |
 | `emailSubject` | | `Azure Coverage Report` | Subject line of the report email |
-| `office365ConnectionName` | | `office365-coveragereport` | Name of the Office 365 API connection |
 | `recurrenceFrequency` | | `Month` | How often the report runs (`Day`, `Week`, `Month`) |
 | `recurrenceInterval` | | `1` | Number of frequency units between runs |
 | `recurrenceTimeZone` | | `UTC` | Time zone used to evaluate the schedule |
-| `recurrenceStartTime` | | `2026-01-01T06:00:00` | First scheduled run (`yyyy-MM-ddTHH:mm:ss`) |
-| `subscriptionIds` | | `[]` | Subscriptions to report on. Empty = every subscription the identity can read |
-| `resourceTypes` | | 29 common types | Resource types included in the diagnostic-settings check |
 | `logicAppState` | | `Disabled` | Deploy the Logic App enabled or disabled |
 
-### Default resource types
+The only value you must supply is **`recipientEmail`**. Everything else has a working default.
 
-The template ships with 29 resource types that support diagnostic settings, including API Management, Automation Accounts, Redis, Cognitive Services, Virtual Machines, Container Registries, AKS, MariaDB/MySQL/PostgreSQL, Cosmos DB, Data Collection Rules, Key Vaults, Logic Apps, Machine Learning, Application Gateways, Azure Firewall, Bastion, DDoS plans, Front Door, NSGs, Recovery Services Vaults, SQL, SQL VMs, Storage Accounts, Synapse, and App Service.
+### Scope and resource types
 
-Override `resourceTypes` to narrow or widen the scope. Values must be lowercase Resource Graph type strings, e.g. `microsoft.compute/virtualmachines`.
+The report covers **every subscription the managed identity can read**, and checks 29 resource types that support diagnostic settings: API Management, Automation Accounts, Redis, Cognitive Services, Virtual Machines, Container Registries, AKS, MariaDB/MySQL/PostgreSQL, Cosmos DB, Data Collection Rules, Key Vaults, Logic Apps, Machine Learning, Application Gateways, Azure Firewall, Bastion, DDoS plans, Front Door, NSGs, Recovery Services Vaults, SQL, SQL VMs, Storage Accounts, Synapse, and App Service.
+
+Both are set inside the workflow's Resource Graph queries. To narrow the scope, edit the `Get_all_Azure_Resources_using_Graph` action in the Logic App designer — add subscription IDs to the `subscriptions` array, or change the `where type in (...)` list.
 
 ## What Gets Deployed
 
@@ -176,7 +180,9 @@ Then use **Run Trigger** in the portal to confirm the first report arrives.
 ## Notes
 
 - **Identity:** the workflow authenticates to `https://management.azure.com` with its **system-assigned managed identity**. No user-assigned identity or app registration is required.
-- **Scope:** leaving `subscriptionIds` empty makes Resource Graph query every subscription the managed identity can read. This is usually what you want; set it explicitly to report on a subset.
+- **Scope:** the Resource Graph queries use an empty `subscriptions` array, which means "every subscription the managed identity can read". Grant the roles at a management group to cover the whole tenant, or at a single subscription to limit the report.
+- **Scheduling:** the trigger sets only `frequency`, `interval` and `timeZone`, with no `startTime`, so the schedule begins when you enable the Logic App. `recurrenceTimeZone` has no effect unless a start time is added — and if you do add one, combining `timeZone: UTC` with a start time is rejected by the runtime (`InvalidWorkflowTriggerRecurrence`). Use a `yyyy-MM-ddTHH:mm:ssZ` value with no `timeZone` instead.
+- **Runtime:** the email includes an elapsed-time footer calculated from the `StartTime` variable.
 - **Sentinel detection:** a workspace is treated as Sentinel-enabled when a `microsoft.operationsmanagement/solutions` resource named `SecurityInsights(<workspace>)` exists. A resource is marked `Sentinel` when any of its diagnostic settings target one of those workspaces.
 - **Concurrency:** the per-resource loop runs 50 iterations in parallel. Lower this in the designer if you hit API throttling on very large estates.
 - **Failure tolerance:** `Get_Settings` is allowed to fail per resource (`runAfter` accepts `Succeeded` and `Failed`); those resources are reported as `Error` rather than failing the run.
