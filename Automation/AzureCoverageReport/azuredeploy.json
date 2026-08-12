@@ -67,50 +67,6 @@
         "description": "Time zone used to evaluate the recurrence schedule."
       }
     },
-    "subscriptionIds": {
-      "type": "array",
-      "defaultValue": [],
-      "metadata": {
-        "description": "Subscription IDs to report on. Leave empty to query every subscription the managed identity can read."
-      }
-    },
-    "resourceTypes": {
-      "type": "array",
-      "defaultValue": [
-        "microsoft.apimanagement/service",
-        "microsoft.automation/automationaccounts",
-        "microsoft.cache/redis",
-        "microsoft.cognitiveservices/accounts",
-        "microsoft.compute/virtualmachines",
-        "microsoft.containerregistry/registries",
-        "microsoft.containerservice/managedclusters",
-        "microsoft.dbformariadb/servers",
-        "microsoft.dbformysql/flexibleservers",
-        "microsoft.dbformysql/servers",
-        "microsoft.dbforpostgresql/flexibleservers",
-        "microsoft.dbforpostgresql/servers",
-        "microsoft.documentdb/databaseaccounts",
-        "microsoft.insights/datacollectionrules",
-        "microsoft.keyvault/vaults",
-        "microsoft.logic/workflows",
-        "microsoft.machinelearningservices/workspaces",
-        "microsoft.network/applicationgateways",
-        "microsoft.network/azurefirewalls",
-        "microsoft.network/bastionhosts",
-        "microsoft.network/ddosprotectionplans",
-        "microsoft.network/frontdoors",
-        "microsoft.network/networksecuritygroups",
-        "microsoft.recoveryservices/vaults",
-        "microsoft.sql/servers",
-        "microsoft.sqlvirtualmachine/sqlvirtualmachines",
-        "microsoft.storage/storageaccounts",
-        "microsoft.synapse/workspaces",
-        "microsoft.web/sites"
-      ],
-      "metadata": {
-        "description": "Resource types included in the diagnostic-settings coverage check."
-      }
-    },
     "logicAppState": {
       "type": "string",
       "defaultValue": "Disabled",
@@ -148,7 +104,7 @@
         "type": "SystemAssigned"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/connections', parameters('office365ConnectionName'))]"
+        "[resourceId('Microsoft.Web/connections','office365-coveragereport')]"
       ],
       "properties": {
         "state": "[parameters('logicAppState')]",
@@ -236,7 +192,7 @@
                     "uri": "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2022-10-01",
                     "method": "POST",
                     "body": {
-                      "subscriptions": "[parameters('subscriptionIds')]",
+                      "subscriptions": [],
                       "query": "resources | where type =~ 'microsoft.operationsmanagement/solutions' | where name startswith 'SecurityInsights(' | extend id=replace_string(tolower(id),'microsoft.operationsmanagement/solutions/securityinsights(','microsoft.operationalinsights/workspaces/') | project id=substring(id,0, strlen(id)-1)"
                     },
                     "authentication": {
@@ -378,8 +334,8 @@
                           "options": {
                             "$skipToken": "@{variables('SkipToken')}"
                           },
-                          "subscriptions": "[parameters('subscriptionIds')]",
-                          "query": "[concat('resources | where type in (''', join(parameters('resourceTypes'), ''','''), ''') | project id,name,type,resourceGroup,subscriptionId')]"
+                          "subscriptions": [],
+                          "query": "resources| where type in ( 'microsoft.apimanagement/service', 'microsoft.automation/automationaccounts', 'microsoft.cache/redis', 'microsoft.cognitiveservices/accounts', 'microsoft.compute/virtualmachines', 'microsoft.containerregistry/registries', 'microsoft.containerservice/managedclusters', 'microsoft.dbformariadb/servers', 'microsoft.dbformysql/flexibleservers', 'microsoft.dbformysql/servers', 'microsoft.dbforpostgresql/flexibleservers', 'microsoft.dbforpostgresql/servers', 'microsoft.documentdb/databaseaccounts', 'microsoft.insights/datacollectionrules', 'microsoft.keyvault/vaults', 'microsoft.logic/workflows', 'microsoft.machinelearningservices/workspaces', 'microsoft.network/applicationgateways', 'microsoft.network/azurefirewalls', 'microsoft.network/bastionhosts', 'microsoft.network/ddosprotectionplans', 'microsoft.network/frontdoors', 'microsoft.network/networksecuritygroups', 'microsoft.recoveryservices/vaults', 'microsoft.sql/servers', 'microsoft.sqlvirtualmachine/sqlvirtualmachines', 'microsoft.storage/storageaccounts', 'microsoft.synapse/workspaces', 'microsoft.web/sites')| project id,name,type,resourceGroup,subscriptionId"
                         },
                         "authentication": {
                           "type": "ManagedServiceIdentity",
@@ -475,7 +431,7 @@
                     "uri": "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2022-10-01",
                     "method": "POST",
                     "body": {
-                      "subscriptions": "[parameters('subscriptionIds')]",
+                      "subscriptions": [],
                       "query": "securityresources | where type =~ 'microsoft.security/pricings' | extend pricingTier = properties.pricingTier, subPlan = properties.subPlan | extend planSet = pack(name, level = case(isnotempty(subPlan),subPlan,pricingTier)) | summarize defenderPlans = make_bag(planSet) by subscriptionId | project subscriptionId, CloudPosture = defenderPlans.CloudPosture, VirtualMachines = defenderPlans.VirtualMachines, AppServices = defenderPlans.AppServices, SqlServers = defenderPlans.SqlServers, SqlServerVirtualMachines = defenderPlans.SqlServerVirtualMachines, OpenSourceRelationalDatabases = defenderPlans.OpenSourceRelationalDatabases, CosmosDB = defenderPlans.CosmosDbs, StorageAccounts = defenderPlans.StorageAccounts, Containers = defenderPlans.Containers, KeyVaults = defenderPlans.KeyVaults, Arm = defenderPlans.Arm | summarize totalSubs = count(), CSPM = countif(CloudPosture == 'Standard'), Servers = countif(VirtualMachines in ('P1','P2')), AppSrv = countif(AppServices == 'Standard'), SqlServers = countif(SqlServers == 'Standard'), SqlServerVirtualMachines = countif(SqlServerVirtualMachines == 'Standard'), OpenSourceRelationalDatabases = countif(OpenSourceRelationalDatabases == 'Standard'), CosmosDB = countif(CosmosDB == 'Standard'), StorageAccounts = countif(StorageAccounts in ('PerTransaction','DefenderForStorageV2','PerStorageAccount')), Containers = countif(Containers == 'Standard'), KeyVaults = countif(KeyVaults in ('PerKeyVault','PerTransaction')), Arm = countif(Arm in ('PerApiCall','PerSubscription')) | extend Covered = CSPM + Servers + AppSrv + SqlServers + SqlServerVirtualMachines + OpenSourceRelationalDatabases + CosmosDB + StorageAccounts + Containers + KeyVaults + Arm | extend TotalPossible = totalSubs * 11 | extend CoveragePercent = round(100.0 * Covered / TotalPossible, 2)"
                     },
                     "authentication": {
@@ -520,7 +476,7 @@
             "value": {
               "office365": {
                 "id": "[variables('office365ApiId')]",
-                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365ConnectionName'))]",
+                "connectionId": "[resourceId('Microsoft.Web/connections','office365-coveragereport')]",
                 "connectionName": "office365-coveragereport",
                 "connectionProperties": {}
               }
