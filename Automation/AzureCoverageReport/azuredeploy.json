@@ -40,13 +40,6 @@
         "description": "Subject line of the report email."
       }
     },
-    "office365ConnectionName": {
-      "type": "string",
-      "defaultValue": "office365-coveragereport",
-      "metadata": {
-        "description": "Name of the Office 365 API connection used to send the report."
-      }
-    },
     "recurrenceFrequency": {
       "type": "string",
       "defaultValue": "Month",
@@ -72,13 +65,6 @@
       "defaultValue": "UTC",
       "metadata": {
         "description": "Time zone used to evaluate the recurrence schedule."
-      }
-    },
-    "recurrenceStartTime": {
-      "type": "string",
-      "defaultValue": "2026-01-01T06:00:00",
-      "metadata": {
-        "description": "First scheduled run, in yyyy-MM-ddTHH:mm:ss format."
       }
     },
     "subscriptionIds": {
@@ -144,10 +130,10 @@
     {
       "type": "Microsoft.Web/connections",
       "apiVersion": "2016-06-01",
-      "name": "[parameters('office365ConnectionName')]",
+      "name": "office365-coveragereport",
       "location": "[parameters('location')]",
       "properties": {
-        "displayName": "[parameters('office365ConnectionName')]",
+        "displayName": "office365-coveragereport",
         "api": {
           "id": "[variables('office365ApiId')]"
         }
@@ -174,8 +160,7 @@
               "recurrence": {
                 "frequency": "[parameters('recurrenceFrequency')]",
                 "interval": "[parameters('recurrenceInterval')]",
-                "timeZone": "[parameters('recurrenceTimeZone')]",
-                "startTime": "[parameters('recurrenceStartTime')]"
+                "timeZone": "[parameters('recurrenceTimeZone')]"
               },
               "type": "Recurrence",
               "conditions": []
@@ -536,7 +521,7 @@
               "office365": {
                 "id": "[variables('office365ApiId')]",
                 "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365ConnectionName'))]",
-                "connectionName": "[parameters('office365ConnectionName')]",
+                "connectionName": "office365-coveragereport",
                 "connectionProperties": {}
               }
             }
@@ -556,7 +541,7 @@
     },
     "office365ConnectionName": {
       "type": "string",
-      "value": "[parameters('office365ConnectionName')]"
+      "value": "office365-coveragereport"
     }
   }
 }
