@@ -30,55 +30,6 @@ The report is delivered as an HTML email with two attachments: `Coverage.csv` (t
   <img src="misc/emailscreenshot.png" alt="Coverage report email showing Sentinel, LAW and Defender for Cloud coverage percentages" width="750">
 </p>
 
-## How It Works
-
-```
-┌──────────────────────────┐
-│  Recurrence Trigger       │  (default: monthly)
-└────────────┬─────────────┘
-             ▼
-┌──────────────────────────┐
-│  Initialize variables     │──► Settings, StartTime, SkipToken, Resources
-└────────────┬─────────────┘
-             │
-      ┌──────┴───────────────────────────┐   (parallel scopes)
-      ▼                                  ▼
-┌───────────────────────┐      ┌──────────────────────────┐
-│  Sentinel_Coverage     │      │  MDC_Coverage             │
-├───────────────────────┤      ├──────────────────────────┤
-│ Get Sentinel workspaces│      │ Query securityresources  │
-│ (SecurityInsights KQL) │      │ for 11 Defender plans    │
-│           │            │      │           │              │
-│           ▼            │      │           ▼              │
-│ ┌────────────────────┐ │      │ ┌──────────────────────┐ │
-│ │ Until loop:        │ │      │ │ Compose MDC HTML     │ │
-│ │ Resource Graph +   │ │      │ │ bar-chart report     │ │
-│ │ $skipToken paging  │ │      │ └──────────────────────┘ │
-│ └─────────┬──────────┘ │      └────────────┬─────────────┘
-│           ▼            │                   │
-│ ┌────────────────────┐ │                   │
-│ │ For each resource: │ │                   │
-│ │  GET diagnostic    │ │                   │
-│ │  settings          │ │                   │
-│ │  → classify Status │ │                   │
-│ │  (concurrency 50)  │ │                   │
-│ └─────────┬──────────┘ │                   │
-│           ▼            │                   │
-│ ┌────────────────────┐ │                   │
-│ │ Create CSV table   │ │                   │
-│ │ Filter: Sentinel   │ │                   │
-│ │ Filter: LAW        │ │                   │
-│ └────────────────────┘ │                   │
-└───────────┬───────────┘                   │
-            └───────────────┬────────────────┘
-                            ▼
-              ┌───────────────────────────┐
-              │  Send an email (V2)        │
-              │  HTML summary +            │
-              │  Coverage.csv + mdc.html   │
-              └───────────────────────────┘
-```
-
 ### Resource Graph pagination
 
 Resource Graph returns at most 1,000 rows per call. The `Until` loop repeatedly calls the API with the returned `$skipToken`, merging each page into the `Resources` variable, until no token is returned. The loop is capped at **60 iterations** with a **1-hour timeout** — roughly 60,000 resources.
