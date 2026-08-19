@@ -1,103 +1,118 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "workspace": {
-            "type": "String"
-        }
-    },
-    "resources": [
-        {
-            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f4583a77-8006-4656-a8fe-8c06c83deeff')]",
-            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f4583a77-8006-4656-a8fe-8c06c83deeff')]",
-            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
-            "kind": "Scheduled",
-            "apiVersion": "2023-12-01-preview",
-            "properties": {
-                "displayName": "Azure - High Role Granted to User",
-                "description": "Identifies when a user is granted a high-privilege role on a resource in Azure",
-                "severity": "Medium",
-                "enabled": true,
-                "query": "AzureActivity\r\n| where ingestion_time() > ago(5m)\r\n| where OperationNameValue =~ 'Microsoft.Authorization/roleAssignments/write' and Authorization !has 'PIM Contributor'\r\n| extend requestbody = tostring(todynamic(Properties)['requestbody'])\r\n| extend Properties2 = todynamic(requestbody)['Properties']\r\n| extend RoleID= tostring(Properties2['RoleDefinitionId']),TargetUserId=tostring(Properties2['PrincipalId'])\r\n| extend\r\nRoleName=case(RoleID endswith '2fe8c4bcb635', 'Owner', RoleID endswith '20f7382dd24c', 'Contributor', RoleID endswith '7773c20a72d9', 'User Access Administrator',RoleID endswith 'f62e7b41a168', 'Role Based Access Control Administrator',RoleID endswith '26add3d73475', 'Access Review Operator Service Role', 'Else'),Callers=iff(array_length(split(Caller, '-')) > 4, 'MS-PIM', Caller)\r\n| where RoleName != 'Else' and Callers != 'MS-PIM'\r\n| extend Description=strcat(Caller, ' has assigned ',RoleName,' role to ', TargetUserId,' on the following scope: ', Properties2['Scope'],' from ', CallerIpAddress)\r\n| project-away Properties2",
-                "queryFrequency": "PT5M",
-                "queryPeriod": "PT8M",
-                "triggerOperator": "GreaterThan",
-                "triggerThreshold": 0,
-                "suppressionDuration": "PT5H",
-                "suppressionEnabled": false,
-                "startTimeUtc": null,
-                "tactics": [
-                    "Persistence"
-                ],
-                "techniques": [
-                    "T1098"
-                ],
-                "subTechniques": [],
-                "alertRuleTemplateName": null,
-                "incidentConfiguration": {
-                    "createIncident": true,
-                    "groupingConfiguration": {
-                        "enabled": true,
-                        "reopenClosedIncident": false,
-                        "lookbackDuration": "PT5H",
-                        "matchingMethod": "Selected",
-                        "groupByEntities": [
-                            "Account",
-                            "IP"
-                        ],
-                        "groupByAlertDetails": [],
-                        "groupByCustomDetails": []
-                    }
-                },
-                "eventGroupingSettings": {
-                    "aggregationKind": "SingleAlert"
-                },
-                "alertDetailsOverride": {
-                    "alertDescriptionFormat": "{{Description}}",
-                    "alertDynamicProperties": []
-                },
-                "customDetails": null,
-                "entityMappings": [
-                    {
-                        "entityType": "Account",
-                        "fieldMappings": [
-                            {
-                                "identifier": "FullName",
-                                "columnName": "Caller"
-                            }
-                        ]
-                    },
-                    {
-                        "entityType": "IP",
-                        "fieldMappings": [
-                            {
-                                "identifier": "Address",
-                                "columnName": "CallerIpAddress"
-                            }
-                        ]
-                    },
-                    {
-                        "entityType": "AzureResource",
-                        "fieldMappings": [
-                            {
-                                "identifier": "ResourceId",
-                                "columnName": "ResourceId"
-                            }
-                        ]
-                    },
-                    {
-                        "entityType": "Account",
-                        "fieldMappings": [
-                            {
-                                "identifier": "AadUserId",
-                                "columnName": "TargetUserId"
-                            }
-                        ]
-                    }
-                ],
-                "sentinelEntitiesMappings": null,
-                "templateVersion": null
-            }
-        }
-    ]
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "parameters":  {
+                       "analytic-id":  {
+                                           "defaultValue":  "f4583a77-8006-4656-a8fe-8c06c83defff",
+                                           "minLength":  1,
+                                           "type":  "string",
+                                           "metadata":  {
+                                                            "description":  "Unique id for the scheduled alert rule"
+                                                        }
+                                       },
+                       "workspace":  {
+                                         "type":  "String"
+                                     }
+                   },
+    "resources":  [
+                      {
+                          "name":  "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f4583a77-8006-4656-a8fe-8c06c83defff')]",
+                          "type":  "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+                          "kind":  "Scheduled",
+                          "apiVersion":  "2023-12-01-preview",
+                          "properties":  {
+                                             "displayName":  "Azure - High Role Granted to User",
+                                             "description":  "Identifies when a user is granted a high-privilege role on a resource in Azure",
+                                             "severity":  "High",
+                                             "enabled":  true,
+                                             "query":  "AzureActivity\r\n| where ingestion_time() \u003e ago(5m)\r\n| where OperationNameValue =~ 'Microsoft.Authorization/roleAssignments/write' and Authorization !has 'PIM Contributor'\r\n| extend requestbody = tostring(todynamic(Properties)['requestbody'])\r\n| extend Properties2 = todynamic(requestbody)['Properties']\r\n| extend\r\n    RoleID= tostring(Properties2['RoleDefinitionId']),\r\n    TargetUserId=tostring(Properties2['PrincipalId'])\r\n| extend\r\n    RoleName=case(RoleID endswith '2fe8c4bcb635', 'Owner', RoleID endswith '20f7382dd24c', 'Contributor', RoleID endswith '7773c20a72d9', 'User Access Administrator', RoleID endswith 'f62e7b41a168', 'Role Based Access Control Administrator', RoleID endswith '26add3d73475', 'Access Review Operator Service Role',RoleID endswith '3b7fe8e74483', 'Key Vault Administrator',RoleID endswith 'b4c8fea62acd', 'Security Admin', 'Else'),\r\n    Callers=iff(array_length(split(Caller, '-')) \u003e 4, 'MS-PIM', Caller)\r\n| where RoleName != 'Else' and Callers != 'MS-PIM'\r\n| extend Description=strcat(Caller, ' has assigned ', RoleName, ' role to ', TargetUserId, ' on the following scope: ', Properties2['Scope'], ' from ', CallerIpAddress)\r\n| project-away Properties2",
+                                             "queryFrequency":  "PT5M",
+                                             "queryPeriod":  "PT8M",
+                                             "triggerOperator":  "GreaterThan",
+                                             "triggerThreshold":  0,
+                                             "suppressionDuration":  "PT5H",
+                                             "suppressionEnabled":  false,
+                                             "startTimeUtc":  null,
+                                             "tactics":  [
+                                                             "Persistence"
+                                                         ],
+                                             "techniques":  [
+                                                                "T1098"
+                                                            ],
+                                             "subTechniques":  [
+
+                                                               ],
+                                             "alertRuleTemplateName":  null,
+                                             "incidentConfiguration":  {
+                                                                           "createIncident":  true,
+                                                                           "groupingConfiguration":  {
+                                                                                                         "enabled":  true,
+                                                                                                         "reopenClosedIncident":  false,
+                                                                                                         "lookbackDuration":  "PT5H",
+                                                                                                         "matchingMethod":  "Selected",
+                                                                                                         "groupByEntities":  [
+                                                                                                                                 "Account",
+                                                                                                                                 "IP"
+                                                                                                                             ],
+                                                                                                         "groupByAlertDetails":  [
+
+                                                                                                                                 ],
+                                                                                                         "groupByCustomDetails":  [
+
+                                                                                                                                  ]
+                                                                                                     }
+                                                                       },
+                                             "eventGroupingSettings":  {
+                                                                           "aggregationKind":  "SingleAlert"
+                                                                       },
+                                             "alertDetailsOverride":  {
+                                                                          "alertDescriptionFormat":  "{{Description}}",
+                                                                          "alertDynamicProperties":  [
+
+                                                                                                     ]
+                                                                      },
+                                             "customDetails":  null,
+                                             "entityMappings":  [
+                                                                    {
+                                                                        "entityType":  "Account",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "FullName",
+                                                                                                  "columnName":  "Caller"
+                                                                                              }
+                                                                                          ]
+                                                                    },
+                                                                    {
+                                                                        "entityType":  "IP",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "Address",
+                                                                                                  "columnName":  "CallerIpAddress"
+                                                                                              }
+                                                                                          ]
+                                                                    },
+                                                                    {
+                                                                        "entityType":  "AzureResource",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "ResourceId",
+                                                                                                  "columnName":  "ResourceId"
+                                                                                              }
+                                                                                          ]
+                                                                    },
+                                                                    {
+                                                                        "entityType":  "Account",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "AadUserId",
+                                                                                                  "columnName":  "TargetUserId"
+                                                                                              }
+                                                                                          ]
+                                                                    }
+                                                                ],
+                                             "sentinelEntitiesMappings":  null,
+                                             "templateVersion":  null
+                                         }
+                      }
+                  ]
 }
