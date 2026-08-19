@@ -1,0 +1,361 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dataCollectionRulesLogStash": {
+            "defaultValue": "DCR_Logstash",
+            "type": "String",
+            "metadata": {
+                "description": "Name of the data collection rule."
+            }
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "String",
+            "metadata": {
+                "description": "Must be the same region as the Log Analytics workspace and the DCE."
+            }
+        },
+        "workspacesResourceID": {
+            "type": "String",
+            "metadata": {
+                "description": "Resource ID of the target Log Analytics workspace."
+            }
+        },
+        "dataCollectionEndpointResourceID": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "Optional. Resource ID of a Data Collection Endpoint. Leave empty to use the DCR built-in ingestion endpoint."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2023-03-11",
+            "name": "[parameters('dataCollectionRulesLogStash')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "description": "Normalizes NXLog Windows security events into SecurityEvent, Logstash syslog into Syslog, and CEF into CommonSecurityLog.",
+                "dataCollectionEndpointId": "[if(empty(parameters('dataCollectionEndpointResourceID')), json('null'), parameters('dataCollectionEndpointResourceID'))]",
+                "streamDeclarations": {
+                    "Custom-WindowsEvents-Stream-01": {
+                        "columns": [
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "Computer",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SourceSystem",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Channel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EventID",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SourceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Message",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EventData",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EventType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Level",
+                                "type": "int"
+                            },
+                            {
+                                "name": "EventLevelName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Task",
+                                "type": "int"
+                            },
+                            {
+                                "name": "OpcodeValue",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Keywords",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Version",
+                                "type": "int"
+                            },
+                            {
+                                "name": "ActivityID",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EventRecordId",
+                                "type": "long"
+                            },
+                            {
+                                "name": "SystemProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SystemThreadId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SubjectUserSid",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SubjectUserName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SubjectDomainName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SubjectLogonId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetUserSid",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetUserName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetDomainName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetLogonId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetLinkedLogonId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetOutboundUserName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetOutboundDomainName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LogonType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LogonProcessName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AuthenticationPackageName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LmPackageName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "KeyLength",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TransmittedServices",
+                                "type": "string"
+                            },
+                            {
+                                "name": "WorkstationName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IpAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IpPort",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ImpersonationLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RestrictedAdminMode",
+                                "type": "string"
+                            },
+                            {
+                                "name": "VirtualAccount",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ElevatedToken",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessName",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "Custom-CEF-Stream-01": {
+                        "columns": [
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "cef_message",
+                                "type": "string"
+                            },
+                            {
+                                "name": "logsource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "collector_host",
+                                "type": "string"
+                            },
+                            {
+                                "name": "syslog_timestamp",
+                                "type": "string"
+                            },
+                            {
+                                "name": "priority",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "Custom-Syslog-Stream-01": {
+                        "columns": [
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "logsource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "program",
+                                "type": "string"
+                            },
+                            {
+                                "name": "procid",
+                                "type": "string"
+                            },
+                            {
+                                "name": "msg",
+                                "type": "string"
+                            },
+                            {
+                                "name": "priority",
+                                "type": "string"
+                            },
+                            {
+                                "name": "syslog_timestamp",
+                                "type": "string"
+                            },
+                            {
+                                "name": "syslog_facility",
+                                "type": "string"
+                            },
+                            {
+                                "name": "syslog_severity",
+                                "type": "string"
+                            },
+                            {
+                                "name": "collector_host",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[parameters('workspacesResourceID')]",
+                            "name": "myworkspace"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-WindowsEvents-Stream-01"
+                        ],
+                        "destinations": [
+                            "myworkspace"
+                        ],
+                        "transformKql": "source | project TimeGenerated=todatetime(TimeGenerated), SourceSystem, Computer=tostring(Computer), Channel=tostring(Channel), EventID=toint(EventID), EventSourceName=tostring(SourceName), Activity=strcat(tostring(EventID), ' - ', extract(@'^([^\\r\\n]+)', 1, tostring(Message))), EventData=tostring(EventData), Level=tostring(Level), EventLevelName=tostring(EventLevelName), Task=toint(Task), Opcode=tostring(OpcodeValue), Keywords=case(EventType == 'AUDIT_SUCCESS', '0x8020000000000000', EventType == 'AUDIT_FAILURE', '0x8010000000000000', tostring(Keywords)), Version=toint(Version), Correlation=tostring(ActivityID), EventRecordId=tostring(EventRecordId), SystemProcessId=toint(SystemProcessId), SystemThreadId=toint(SystemThreadId), Account=case(isnotempty(TargetUserName) and isnotempty(TargetDomainName),strcat(tostring(TargetDomainName), '\\\\', tostring(TargetUserName)),isnotempty(TargetUserName),TargetUserName,''), AccountName=tostring(TargetUserName), AccountDomain=tostring(TargetDomainName), AccountType=case(tostring(TargetUserSid) == 'S-1-5-18' or tostring(TargetUserName) endswith '$', 'Machine',isempty(TargetUserName) or isempty(SubjectUserName),'', 'User'), SubjectAccount=iff(isnotempty(SubjectUserName),strcat(tostring(SubjectDomainName), '\\\\', tostring(SubjectUserName)),''), SubjectUserSid=tostring(SubjectUserSid), SubjectUserName=tostring(SubjectUserName), SubjectDomainName=tostring(SubjectDomainName), SubjectLogonId=tostring(SubjectLogonId), TargetAccount=case(isnotempty(TargetUserName) and isnotempty(TargetDomainName),strcat(tostring(TargetDomainName), '\\\\', tostring(TargetUserName)),isnotempty(TargetUserName),TargetUserName,''), TargetUserSid=tostring(TargetUserSid), TargetUserName=tostring(TargetUserName), TargetDomainName=tostring(TargetDomainName), TargetLogonId=tostring(TargetLogonId), TargetLinkedLogonId=tostring(TargetLinkedLogonId), TargetOutboundUserName=tostring(TargetOutboundUserName), TargetOutboundDomainName=tostring(TargetOutboundDomainName), LogonType=toint(LogonType), LogonTypeName=case(toint(LogonType) == 2, '2 - Interactive', toint(LogonType) == 3, '3 - Network', toint(LogonType) == 4, '4 - Batch', toint(LogonType) == 5, '5 - Service', toint(LogonType) == 7, '7 - Unlock', toint(LogonType) == 8, '8 - NetworkCleartext', toint(LogonType) == 9, '9 - NewCredentials', toint(LogonType) == 10, '10 - RemoteInteractive', toint(LogonType) == 11, '11 - CachedInteractive', toint(LogonType) == 12, '12 - CachedRemoteInteractive', toint(LogonType) == 13, '13 - CachedUnlock', strcat(tostring(LogonType), ' - Unknown')), LogonProcessName=replace(@'\\s+$', '', tostring(LogonProcessName)), AuthenticationPackageName=tostring(AuthenticationPackageName), LmPackageName=tostring(LmPackageName), KeyLength=toint(KeyLength), TransmittedServices=tostring(TransmittedServices), WorkstationName=tostring(WorkstationName), IpAddress=tostring(IpAddress), IpPort=tostring(IpPort), ImpersonationLevel=tostring(ImpersonationLevel), RestrictedAdminMode=tostring(RestrictedAdminMode), VirtualAccount=tostring(VirtualAccount), ElevatedToken=tostring(ElevatedToken), Process=extract(@'([^\\\\]+)$', 1, tostring(ProcessName)), ProcessName=tostring(ProcessName)",
+                        "outputStream": "Microsoft-SecurityEvent"
+                    },
+                    {
+                        "streams": [
+                            "Custom-Syslog-Stream-01"
+                        ],
+                        "destinations": [
+                            "myworkspace"
+                        ],
+                        "transformKql": "source | project TimeGenerated, Computer=case(isnotempty(logsource), logsource, collector_host), HostName=logsource, HostIP=collector_host, Facility=syslog_facility, SeverityLevel=syslog_severity, ProcessName=program, ProcessID=toint(procid), SyslogMessage=msg, EventTime=TimeGenerated, SourceSystem='Logstash'",
+                        "outputStream": "Microsoft-Syslog"
+                    },
+                    {
+                        "streams": [
+                            "Custom-CEF-Stream-01"
+                        ],
+                        "destinations": [
+                            "myworkspace"
+                        ],
+                        "transformKql": "source | extend cef = iff(cef_message contains_cs ';', replace(';', ' ', cef_message), cef_message) | parse cef with 'CEF:' CEFVersion:string '|' DeviceVendor:string '|' DeviceProduct:string '|' DeviceVersion:string '|' DeviceEventClassID:string '|' Activity:string '|' LogSeverity:string '|' Extension:string | extend Ext = parse_cef_dictionary(cef)['Extension'] | extend x_dvchost = tostring(Ext.dvchost), x_dvc = tostring(Ext.dvc) | project TimeGenerated, DeviceVendor, DeviceProduct, DeviceVersion, DeviceEventClassID, Activity, LogSeverity, OriginalLogSeverity=LogSeverity, AdditionalExtensions=Extension, SourceSystem='Logstash', Computer=case(isnotempty(x_dvchost), x_dvchost, isnotempty(logsource), logsource, x_dvc), CollectorHostName=collector_host, DeviceName=x_dvchost, DeviceAddress=x_dvc, DeviceAction=tostring(Ext.act), DeviceMacAddress=tostring(Ext.dvcmac), DeviceExternalID=tostring(Ext.deviceExternalId), DeviceFacility=tostring(Ext.deviceFacility), DeviceInboundInterface=tostring(Ext.deviceInboundInterface), DeviceOutboundInterface=tostring(Ext.deviceOutboundInterface), DeviceDnsDomain=tostring(Ext.deviceDnsDomain), DeviceNtDomain=tostring(Ext.deviceNtDomain), DeviceEventCategory=tostring(Ext.cat), DeviceTimeZone=tostring(Ext.dtz), DeviceTranslatedAddress=tostring(Ext.deviceTranslatedAddress), SourceIP=tostring(Ext.src), SourceHostName=tostring(Ext.shost), SourceMACAddress=tostring(Ext.smac), SourcePort=toint(Ext.spt), SourceUserID=tostring(Ext.suid), SourceUserName=tostring(Ext.suser), SourceUserPrivileges=tostring(Ext.spriv), SourceNTDomain=tostring(Ext.sntdom), SourceDnsDomain=tostring(Ext.sourceDnsDomain), SourceProcessId=toint(Ext.spid), SourceProcessName=tostring(Ext.sproc), SourceServiceName=tostring(Ext.sourceServiceName), SourceTranslatedAddress=tostring(Ext.sourceTranslatedAddress), SourceTranslatedPort=toint(Ext.sourceTranslatedPort), DestinationIP=tostring(Ext.dst), DestinationHostName=tostring(Ext.dhost), DestinationMACAddress=tostring(Ext.dmac), DestinationPort=toint(Ext.dpt), DestinationUserID=tostring(Ext.duid), DestinationUserName=tostring(Ext.duser), DestinationUserPrivileges=tostring(Ext.dpriv), DestinationNTDomain=tostring(Ext.dntdom), DestinationDnsDomain=tostring(Ext.destinationDnsDomain), DestinationProcessId=toint(Ext.dpid), DestinationProcessName=tostring(Ext.dproc), DestinationServiceName=tostring(Ext.destinationServiceName), DestinationTranslatedAddress=tostring(Ext.destinationTranslatedAddress), DestinationTranslatedPort=toint(Ext.destinationTranslatedPort), ApplicationProtocol=tostring(Ext.app), Protocol=tostring(Ext.proto), CommunicationDirection=tostring(Ext.deviceDirection), ReceivedBytes=tolong(Ext['in']), SentBytes=tolong(Ext.out), RequestURL=tostring(Ext.request), RequestMethod=tostring(Ext.requestMethod), RequestClientApplication=tostring(Ext.requestClientApplication), RequestContext=tostring(Ext.requestContext), RequestCookies=tostring(Ext.requestCookies), EventCount=toint(Ext.cnt), EventOutcome=tostring(Ext.outcome), ExtID=tostring(Ext.externalId), Message=tostring(Ext.msg), Reason=tostring(Ext.reason), ReceiptTime=tostring(Ext.rt), ProcessID=toint(Ext.dvcpid), ProcessName=tostring(Ext.deviceProcessName), FileName=tostring(Ext.fname), FilePath=tostring(Ext.filePath), FileSize=toint(Ext.fsize), FileType=tostring(Ext.fileType), FileHash=tostring(Ext.fileHash), FileID=tostring(Ext.fileId), FileCreateTime=tostring(Ext.fileCreateTime), FileModificationTime=tostring(Ext.fileModificationTime), FilePermission=tostring(Ext.filePermission), DeviceCustomString1=tostring(Ext.cs1), DeviceCustomString1Label=tostring(Ext.cs1Label), DeviceCustomString2=tostring(Ext.cs2), DeviceCustomString2Label=tostring(Ext.cs2Label), DeviceCustomString3=tostring(Ext.cs3), DeviceCustomString3Label=tostring(Ext.cs3Label), DeviceCustomString4=tostring(Ext.cs4), DeviceCustomString4Label=tostring(Ext.cs4Label), DeviceCustomString5=tostring(Ext.cs5), DeviceCustomString5Label=tostring(Ext.cs5Label), DeviceCustomString6=tostring(Ext.cs6), DeviceCustomString6Label=tostring(Ext.cs6Label), FieldDeviceCustomNumber1=tolong(Ext.cn1), DeviceCustomNumber1Label=tostring(Ext.cn1Label), FieldDeviceCustomNumber2=tolong(Ext.cn2), DeviceCustomNumber2Label=tostring(Ext.cn2Label), FieldDeviceCustomNumber3=tolong(Ext.cn3), DeviceCustomNumber3Label=tostring(Ext.cn3Label)",
+                        "outputStream": "Microsoft-CommonSecurityLog"
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "dataCollectionRuleResourceId": {
+            "type": "String",
+            "value": "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dataCollectionRulesLogStash'))]"
+        },
+        "dataCollectionRuleImmutableId": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', parameters('dataCollectionRulesLogStash')), '2023-03-11', 'Full').properties.immutableId]"
+        },
+        "streamNameWindows": {
+            "type": "String",
+            "value": "Custom-WindowsEvents-Stream-01"
+        },
+        "streamNameCef": {
+            "type": "String",
+            "value": "Custom-CEF-Stream-01"
+        },
+        "streamNameSyslog": {
+            "type": "String",
+            "value": "Custom-Syslog-Stream-01"
+        }
+    }
+}
