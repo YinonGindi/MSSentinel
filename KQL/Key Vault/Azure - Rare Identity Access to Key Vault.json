@@ -1,0 +1,107 @@
+{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "parameters":  {
+                       "analytic-id":  {
+                                           "defaultValue":  "41744e67-ad73-4ab7-a4f8-46f2d4c80de9",
+                                           "minLength":  1,
+                                           "type":  "string",
+                                           "metadata":  {
+                                                            "description":  "Unique id for the scheduled alert rule"
+                                                        }
+                                       },
+                       "workspace":  {
+                                         "type":  "String"
+                                     }
+                   },
+    "resources":  [
+                      {
+                          "name":  "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/41744e67-ad73-4ab7-a4f8-46f2d4c80de9')]",
+                          "type":  "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+                          "kind":  "Scheduled",
+                          "apiVersion":  "2023-12-01-preview",
+                          "properties":  {
+                                             "displayName":  "Azure - Rare Identity Access to Key Vault",
+                                             "description":  "Detects first-time access to Key Vault values in the last hour by an identity never seen in the prior 14-day baseline on Azure",
+                                             "severity":  "Medium",
+                                             "enabled":  true,
+                                             "query":  "let recent = 1h;\nlet baseline = AzureDiagnostics\n| where TimeGenerated between (ago(14d) .. ago(recent))\n| where ResourceProvider =~ \"MICROSOFT.KEYVAULT\"\n| extend identity_claim_upn_s=column_ifexists('identity_claim_upn_s',''),identity_claim_appid_g=column_ifexists('identity_claim_appid_g','')\n| summarize by Vault=tolower(_ResourceId), Identity=coalesce(identity_claim_upn_s, identity_claim_appid_g, tostring(CallerIPAddress));\nAzureDiagnostics\n| where TimeGenerated \u003e ago(recent)\n| where ResourceProvider =~ \"MICROSOFT.KEYVAULT\"\n| extend identity_claim_upn_s=column_ifexists('identity_claim_upn_s',''),identity_claim_appid_g=column_ifexists('identity_claim_appid_g','')\n| where OperationName has_any (\"SecretGet\", \"KeyDecrypt\", \"CertificateGet\")\n| extend Vault=tolower(_ResourceId), Identity=coalesce(identity_claim_upn_s, identity_claim_appid_g, tostring(CallerIPAddress))\n| join kind=leftanti baseline on Vault, Identity\n| project TimeGenerated, Identity, CallerIPAddress, OperationName, Vault\n\n",
+                                             "queryFrequency":  "PT1H",
+                                             "queryPeriod":  "P14D",
+                                             "triggerOperator":  "GreaterThan",
+                                             "triggerThreshold":  0,
+                                             "suppressionDuration":  "PT5H",
+                                             "suppressionEnabled":  false,
+                                             "startTimeUtc":  null,
+                                             "tactics":  [
+                                                             "CredentialAccess",
+                                                             "Discovery",
+                                                             "Collection"
+                                                         ],
+                                             "techniques":  [
+                                                                "T1555",
+                                                                "T1526",
+                                                                "T1530"
+                                                            ],
+                                             "subTechniques":  [
+                                                                   "T1555.006"
+                                                               ],
+                                             "alertRuleTemplateName":  null,
+                                             "incidentConfiguration":  {
+                                                                           "createIncident":  true,
+                                                                           "groupingConfiguration":  {
+                                                                                                         "enabled":  true,
+                                                                                                         "reopenClosedIncident":  false,
+                                                                                                         "lookbackDuration":  "PT5H",
+                                                                                                         "matchingMethod":  "Selected",
+                                                                                                         "groupByEntities":  [
+                                                                                                                                 "Account"
+                                                                                                                             ],
+                                                                                                         "groupByAlertDetails":  [
+
+                                                                                                                                 ],
+                                                                                                         "groupByCustomDetails":  [
+
+                                                                                                                                  ]
+                                                                                                     }
+                                                                       },
+                                             "eventGroupingSettings":  {
+                                                                           "aggregationKind":  "AlertPerResult"
+                                                                       },
+                                             "alertDetailsOverride":  null,
+                                             "customDetails":  null,
+                                             "entityMappings":  [
+                                                                    {
+                                                                        "entityType":  "IP",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "Address",
+                                                                                                  "columnName":  "CallerIPAddress"
+                                                                                              }
+                                                                                          ]
+                                                                    },
+                                                                    {
+                                                                        "entityType":  "AzureResource",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "ResourceId",
+                                                                                                  "columnName":  "Vault"
+                                                                                              }
+                                                                                          ]
+                                                                    },
+                                                                    {
+                                                                        "entityType":  "Account",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "FullName",
+                                                                                                  "columnName":  "Identity"
+                                                                                              }
+                                                                                          ]
+                                                                    }
+                                                                ],
+                                             "sentinelEntitiesMappings":  null,
+                                             "templateVersion":  null
+                                         }
+                      }
+                  ]
+}
