@@ -28,28 +28,62 @@ logic where it can be changed without restarting the pipeline.
 
 ---
 
+## Quick deploy
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMicrosoft_Sentinel%2Fmain%2FConnectors%2FLogstash%2FLogstashDCR.json)
+[![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMicrosoft_Sentinel%2Fmain%2FConnectors%2FLogstash%2FLogstashDCR.json)
+
+You will be prompted for the workspace resource ID and the resource ID of your **existing**
+data collection endpoint — see [Prerequisites](#prerequisites). Then continue from
+[step 2](#2-grant-the-managed-identity-permission-on-the-dcr).
+
+---
+
 ## Contents
 
 | File | Purpose |
 | --- | --- |
-| `LogstashDCE.json` | ARM template — data collection endpoint |
 | `LogstashDCR.json` | ARM template — data collection rule (3 streams, 3 transforms) |
 | `logstash-sentinel.conf` | Logstash pipeline — input, detection filters, 3 outputs |
 | `NXLog.conf` | NXLog config for the Windows Event Forwarding collector |
+| `Send-SentinelTestEvents.ps1` | PowerShell UDP sender for syslog and CEF test events |
 
 ---
 
 ## Prerequisites
 
 - A Log Analytics workspace with Microsoft Sentinel enabled.
+
+- **A data collection endpoint (DCE).** This is supplied by the environment owner and is
+  deliberately **not** deployed by this repo, since the DCE is usually shared across
+  connectors and governed by the customer's network design. It must be in the **same region
+  as the DCR**. Collect two values from it:
+
+  | Value | Used as | Where to find it |
+  | --- | --- | --- |
+  | Resource ID | `dataCollectionEndpointResourceID` parameter of the DCR | DCE → Properties |
+  | Logs ingestion URL | `data_collection_endpoint` in the pipeline | DCE → Overview → *Logs ingestion* |
+
+  ```bash
+  az monitor data-collection endpoint show -g <rg> -n <dce-name> \
+    --query "{ResourceId:id, LogsIngestion:logsIngestion.endpoint}" -o yaml
+  ```
+
+  The ingestion URL looks like `https://<dce-name>-ab12.westus2-1.ingest.monitor.azure.com`.
+  If the DCE has `publicNetworkAccess` disabled, the Logstash host must reach it over
+  Private Link / AMPLS.
+
 - The **Common Event Format** solution installed from **Content Hub**. This is what creates
   the `CommonSecurityLog` table — without it, the CEF data flow fails validation at deploy time.
   `SecurityEvent` requires the **Windows Security Events** solution. `Syslog` ships with
   LogManagement and needs nothing.
+
 - A Logstash host (8.x tested) that can reach `*.ingest.monitor.azure.com` on TCP 443.
+
 - A **managed identity** on the Logstash host — either an Azure VM system-assigned identity
   or **Azure Arc** for on-premises. The pipeline authenticates with `managed_identity => true`;
   no client secret is stored anywhere.
+
 - The Sentinel output plugin:
   ```bash
   sudo /usr/share/logstash/bin/logstash-plugin install microsoft-sentinel-log-analytics-logstash-output-plugin
@@ -59,27 +93,9 @@ logic where it can be changed without restarting the pipeline.
 
 ## Deployment
 
-### 1. Create the data collection endpoint
+### 1. Deploy the data collection rule
 
-The DCE **must be in the same region as the DCR**. Keep both in the workspace region.
-
-```bash
-az deployment group create \
-  --resource-group <rg> \
-  --template-file LogstashDCE.json \
-  --parameters dataCollectionEndpointName=DCE_Logstash location=westus2
-```
-
-Record the outputs:
-
-- `dataCollectionEndpointResourceID` — feed this into the DCR deployment in step 2.
-- `logsIngestionEndpoint` — this is the `data_collection_endpoint` value in
-  `logstash-sentinel.conf` (looks like `https://dce-logstash-ab12.westus2-1.ingest.monitor.azure.com`).
-
-> Portal equivalent: **Monitor → Data Collection Endpoints → Create**. The ingestion URL is
-> shown on the endpoint's **Overview** blade as *Logs ingestion*.
-
-### 2. Deploy the data collection rule
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMicrosoft_Sentinel%2Fmain%2FConnectors%2FLogstash%2FLogstashDCR.json)
 
 ```bash
 az deployment group create \
@@ -89,13 +105,13 @@ az deployment group create \
       dataCollectionRulesLogStash=DCR_Logstash \
       location=westus2 \
       workspacesResourceID=/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.OperationalInsights/workspaces/<workspace> \
-      dataCollectionEndpointResourceID=<output from step 1>
+      dataCollectionEndpointResourceID=/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Insights/dataCollectionEndpoints/<dce-name>
 ```
 
-Record `dataCollectionRuleImmutableId` from the outputs — that is the `dcr_immutable_id`
-value in `logstash-sentinel.conf`.
+`location` must match the DCE's region. Record `dataCollectionRuleImmutableId` from the
+outputs — that is the `dcr_immutable_id` value in `logstash-sentinel.conf`.
 
-### 3. Grant the managed identity permission on the DCR
+### 2. Grant the managed identity permission on the DCR
 
 Scope the role assignment to the **DCR**, not the workspace.
 
@@ -111,15 +127,15 @@ az role assignment create \
   --scope "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Insights/dataCollectionRules/DCR_Logstash"
 ```
 
-### 4. Configure Logstash
+### 3. Configure Logstash
 
 Copy `logstash-sentinel.conf` to `/etc/logstash/conf.d/` and replace the placeholders in all
 three output blocks:
 
 | Placeholder | Value |
 | --- | --- |
-| `<DCE>` | `logsIngestionEndpoint` from step 1 |
-| `dcr-<ID>` | `dataCollectionRuleImmutableId` from step 2 |
+| `<DCE>` | Logs ingestion URL of the DCE (see Prerequisites) |
+| `dcr-<ID>` | `dataCollectionRuleImmutableId` from step 1 |
 
 Validate and start:
 
@@ -129,12 +145,12 @@ sudo systemctl restart logstash
 sudo journalctl -u logstash -f
 ```
 
-### 5. Configure NXLog on the WEF collector
+### 4. Configure NXLog on the WEF collector
 
 Copy `NXLog.conf` and set the `Host` in the `<Output out>` block to the Logstash host.
 Restart the `nxlog` service.
 
-### 6. Apply the UDP tuning on the Logstash host
+### 5. Apply the UDP tuning on the Logstash host
 
 Fragmented Windows events are dropped silently once the kernel reassembly pool fills.
 This is the most common cause of "some events never arrive":
@@ -156,13 +172,33 @@ also fixes the socket buffer.
 
 ## Validation
 
-Send a test event of each type:
+`Send-SentinelTestEvents.ps1` sends RFC3164 syslog and CEF samples over UDP. Run it from any
+Windows host that can reach the collector:
+
+```powershell
+# One of each sample -- 3 syslog, 2 CEF
+.\Send-SentinelTestEvents.ps1 -Server 192.168.94.145
+
+# CEF only, 10 rounds, 100 ms apart
+.\Send-SentinelTestEvents.ps1 -Server 192.168.94.145 -Type Cef -Count 10 -DelayMs 100
+```
+
+| Parameter | Default | Purpose |
+| --- | --- | --- |
+| `-Server` | *(required)* | Collector hostname or IP |
+| `-Port` | `5044` | Collector UDP port |
+| `-Type` | `All` | `All`, `Syslog`, or `Cef` |
+| `-Count` | `1` | Rounds of the full sample set |
+| `-DelayMs` | `250` | Pause between datagrams |
+
+The samples exercise different code paths on purpose: syslog with and without a process ID,
+three different facility/severity values, and CEF with both custom string fields (`cs1Label`
+/ `cs1`) and file fields (`fname` / `fileHash`).
+
+Bash equivalent, if you prefer:
 
 ```bash
-# syslog
 echo '<134>Aug 19 12:00:00 testhost sshd[1234]: Accepted password for alice from 10.0.0.5 port 22 ssh2' > /dev/udp/<logstash-host>/5044
-
-# CEF
 echo '<134>Aug 19 12:00:00 fw-01 CEF:0|Vendor|Product|1.0|100|Test event|5|src=10.1.2.3 spt=51234 dst=8.8.8.8 dpt=443 proto=TCP act=allow dvchost=fw-01' > /dev/udp/<logstash-host>/5044
 ```
 
@@ -177,7 +213,8 @@ union SecurityEvent, Syslog, CommonSecurityLog
 ```
 
 **Expect no data for the first ~3 minutes.** The first write to a table after a DCR change
-is slow; this is normal and is not an error.
+is slow; this is normal and is not an error. UDP is fire-and-forget, so a successful send
+never proves delivery — always confirm on the collector as well.
 
 ---
 
@@ -256,5 +293,3 @@ unfragmented datagram and removes the problem entirely.
 - `cfp*`, `c6a*`, `flex*`, and `OldFile*` CEF extensions are unmapped.
 - `Keywords` for non-audit Windows events falls through as a signed decimal rather than the
   hex form native `SecurityEvent` rows use.
-- `SourceSystem` is set by NXLog to `<fqdn> - NXLog`, so queries filtering
-  `SourceSystem == "OpsManager"` will not match these rows.
