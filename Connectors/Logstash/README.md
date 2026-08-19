@@ -31,7 +31,6 @@ logic where it can be changed without restarting the pipeline.
 ## Quick deploy
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMicrosoft_Sentinel%2Fmain%2FConnectors%2FLogstash%2FLogstashDCR.json)
-[![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FMicrosoft_Sentinel%2Fmain%2FConnectors%2FLogstash%2FLogstashDCR.json)
 
 You will be prompted for the workspace resource ID and the resource ID of your **existing**
 data collection endpoint — see [Prerequisites](#prerequisites). Then continue from
