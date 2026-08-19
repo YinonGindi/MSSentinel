@@ -189,14 +189,11 @@ $Syslog2='<11>Aug 19 16:06:12 db-02 postgres[988]: FATAL: password authenticatio
 # auth.notice, no PID -> exercises the second grok pattern
 $Syslog3='<85>Aug 19 16:07:30 web-01 sudo: jdoe : TTY=pts/0 ; PWD=/home/jdoe ; USER=root ; COMMAND=/bin/systemctl restart nginx'
 $u = New-Object System.Net.Sockets.UdpClient
-$msg = [System.Text.Encoding]::ASCII.GetBytes($SyslogCEF)
-$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
-$msg = [System.Text.Encoding]::ASCII.GetBytes($Syslog1)
-$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
-$msg = [System.Text.Encoding]::ASCII.GetBytes($Syslog2)
-$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
-$msg = [System.Text.Encoding]::ASCII.GetBytes($Syslog3)
-$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
+foreach ($msgText in @($SyslogCEF,$Syslog1,$Syslog2,$Syslog3))
+{
+$msg = [System.Text.Encoding]::ASCII.GetBytes($msgText)
+[void]$u.Send($msg, $msg.Length, $CollectorIP, 5044)
+}
 $u.Close()
 ```
 
