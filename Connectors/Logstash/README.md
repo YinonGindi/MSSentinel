@@ -171,37 +171,34 @@ also fixes the socket buffer.
 
 ## Validation
 
-`Send-SentinelTestEvents.ps1` sends RFC3164 syslog and CEF samples over UDP. Run it from any
-Windows host that can reach the collector:
-
-```powershell
-# One of each sample -- 3 syslog, 2 CEF
-.\Send-SentinelTestEvents.ps1 -Server 192.168.94.145
-
-# CEF only, 10 rounds, 100 ms apart
-.\Send-SentinelTestEvents.ps1 -Server 192.168.94.145 -Type Cef -Count 10 -DelayMs 100
-```
-
-| Parameter | Default | Purpose |
-| --- | --- | --- |
-| `-Server` | *(required)* | Collector hostname or IP |
-| `-Port` | `5044` | Collector UDP port |
-| `-Type` | `All` | `All`, `Syslog`, or `Cef` |
-| `-Count` | `1` | Rounds of the full sample set |
-| `-DelayMs` | `250` | Pause between datagrams |
-
-The samples exercise different code paths on purpose: syslog with and without a process ID,
-three different facility/severity values, and CEF with both custom string fields (`cs1Label`
-/ `cs1`) and file fields (`fname` / `fileHash`).
-
-Bash equivalent, if you prefer:
-
 ```bash
 echo '<134>Aug 19 12:00:00 testhost sshd[1234]: Accepted password for alice from 10.0.0.5 port 22 ssh2' > /dev/udp/<logstash-host>/5044
 echo '<134>Aug 19 12:00:00 fw-01 CEF:0|Vendor|Product|1.0|100|Test event|5|src=10.1.2.3 spt=51234 dst=8.8.8.8 dpt=443 proto=TCP act=allow dvchost=fw-01' > /dev/udp/<logstash-host>/5044
 ```
 
 `/dev/udp` is a bash builtin — it fails under `sh`/`dash`.
+
+```PowerShell
+$SyslogCEF = '<134>Aug 19 15:45:00 fw-01 CEF:0|Palo Alto Networks|PAN-OS|10.2|end|TRAFFIC|3|src=10.1.2.3 spt=51234 dst=8.8.8.8 dpt=443 proto=TCP act=allow suser=jdoe dvchost=fw-01 cs1Label=Rule cs1=Allow-Web in=1234 out=5678 msg=Session ended normally'
+# local0.info  -> Facility local0, SeverityLevel informational
+$Syslog1='<134>Aug 19 16:05:00 web-01 sshd[4321]: Accepted password for jdoe from 10.0.0.5 port 52344 ssh2'
+
+# user.err     -> Facility user-level, SeverityLevel error
+$Syslog2='<11>Aug 19 16:06:12 db-02 postgres[988]: FATAL: password authentication failed for user "admin"'
+
+# auth.notice, no PID -> exercises the second grok pattern
+$Syslog3='<85>Aug 19 16:07:30 web-01 sudo: jdoe : TTY=pts/0 ; PWD=/home/jdoe ; USER=root ; COMMAND=/bin/systemctl restart nginx'
+$u = New-Object System.Net.Sockets.UdpClient
+$msg = [System.Text.Encoding]::ASCII.GetBytes($SyslogCEF)
+$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
+$msg = [System.Text.Encoding]::ASCII.GetBytes($Syslog1)
+$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
+$msg = [System.Text.Encoding]::ASCII.GetBytes($Syslog2)
+$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
+$msg = [System.Text.Encoding]::ASCII.GetBytes($Syslog3)
+$u.Send($msg, $msg.Length, '<collectorIP>', 5044)
+$u.Close()
+```
 
 Then in the workspace:
 
