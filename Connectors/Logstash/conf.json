@@ -1,0 +1,113 @@
+input {
+  udp {
+    port                 => 5044
+    codec                => plain
+    ecs_compatibility    => disabled
+    receive_buffer_bytes => 16777216
+  }
+}
+
+filter {
+
+  # 1. Windows events -- JSON objects
+  if [message] =~ /^\s*\{/ {
+    json {
+      source       => "message"
+      remove_field => [ "message" ]
+    }
+    mutate { add_tag => [ "winevent" ] }
+  }
+
+  # 2. CEF -- tested before syslog, since CEF carries a syslog header
+  else if [message] =~ /CEF:\d/ {
+    grok {
+      ecs_compatibility => "disabled"
+      match             => { "message" => "(?<cef_message>CEF:.*)" }
+      tag_on_failure    => [ "_cef_grok_failure" ]
+    }
+    grok {
+      ecs_compatibility => "disabled"
+      match             => { "message" => "^<%{NONNEGINT:priority}>%{SYSLOGTIMESTAMP:syslog_timestamp}\s+%{SYSLOGHOST:logsource}" }
+      tag_on_failure    => []
+    }
+    mutate {
+      add_field    => {
+        "collector_host" => "%{host}"
+        "TimeGenerated"  => "%{@timestamp}"
+      }
+      add_tag      => [ "cef" ]
+      remove_field => [ "message" ]
+    }
+  }
+
+  # 3. Everything else -- plain syslog
+  else {
+    grok {
+      ecs_compatibility => "disabled"
+      match             => {
+        "message" => [
+          "^<%{NONNEGINT:priority}>%{SYSLOGTIMESTAMP:syslog_timestamp}\s+%{SYSLOGHOST:logsource}\s+%{PROG:program}(?:\[%{POSINT:procid}\])?:\s*%{GREEDYDATA:msg}",
+          "^<%{NONNEGINT:priority}>%{SYSLOGTIMESTAMP:syslog_timestamp}\s+%{SYSLOGHOST:logsource}\s+%{GREEDYDATA:msg}",
+          "^%{SYSLOGTIMESTAMP:syslog_timestamp}\s+%{SYSLOGHOST:logsource}\s+%{PROG:program}(?:\[%{POSINT:procid}\])?:\s*%{GREEDYDATA:msg}",
+          "%{GREEDYDATA:msg}"
+        ]
+      }
+      tag_on_failure    => [ "_syslog_grok_failure" ]
+    }
+
+    if [priority] {
+      syslog_pri {
+        ecs_compatibility     => "disabled"
+        syslog_pri_field_name => "priority"
+      }
+    }
+
+    date {
+      match          => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM d HH:mm:ss", "MMM dd HH:mm:ss", "ISO8601" ]
+      target         => "@timestamp"
+      timezone       => "UTC"
+      tag_on_failure => [ "_syslog_date_failure" ]
+    }
+
+    mutate {
+      add_field    => {
+        "TimeGenerated"  => "%{@timestamp}"
+        "collector_host" => "%{host}"
+      }
+      add_tag      => [ "syslog" ]
+      remove_field => [ "message" ]
+    }
+  }
+
+  mutate { remove_field => [ "@version" ] }
+}
+
+output {
+
+  if "winevent" in [tags] {
+    microsoft-sentinel-log-analytics-logstash-output-plugin {
+      managed_identity         => true
+      data_collection_endpoint => "<DCE>"
+      dcr_immutable_id         => "dcr-<ID>"
+      dcr_stream_name          => "Custom-WindowsEvents-Stream-01"
+    }
+  }
+
+  else if "syslog" in [tags] {
+    microsoft-sentinel-log-analytics-logstash-output-plugin {
+      managed_identity         => true
+      data_collection_endpoint => "<DCE>"
+      dcr_immutable_id         => "dcr-<ID>"
+      dcr_stream_name          => "Custom-Syslog-Stream-01"
+    }
+  }
+
+  else if "cef" in [tags] {
+    microsoft-sentinel-log-analytics-logstash-output-plugin {
+      managed_identity         => true
+      data_collection_endpoint => "<DCE>"
+      dcr_immutable_id         => "dcr-<ID>"
+      dcr_stream_name          => "Custom-CEF-Stream-01"
+    }
+  }
+}
