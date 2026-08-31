@@ -1,0 +1,92 @@
+{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "parameters":  {
+                       "analytic-id":  {
+                                           "defaultValue":  "54e53bd9-1ce1-44c0-86ed-93603a179fbf",
+                                           "minLength":  1,
+                                           "type":  "string",
+                                           "metadata":  {
+                                                            "description":  "Unique id for the scheduled alert rule"
+                                                        }
+                                       },
+                       "workspace":  {
+                                         "type":  "String"
+                                     }
+                   },
+    "resources":  [
+                      {
+                          "name":  "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/54e53bd9-1ce1-44c0-86ed-93603a179fbf')]",
+                          "type":  "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+                          "kind":  "Scheduled",
+                          "apiVersion":  "2023-12-01-preview",
+                          "properties":  {
+                                             "displayName":  "Azure Firewall - New Firewall Connection",
+                                             "description":  "Detects a source IP establishing repeated allowed connections to a destination not seen in the previous 14 days on Azure Firewall",
+                                             "severity":  "Low",
+                                             "enabled":  true,
+                                             "query":  "let rawData = union AZFWNetworkRule,AZFWApplicationRule\r\n| where TimeGenerated \u003e ago(14d)\r\n| extend Dest = coalesce(Fqdn, DestinationIp);\r\nrawData\r\n| where TimeGenerated \u003e ago(1h)\r\n| where Action == \"Allow\"\r\n| join kind=leftanti (rawData| where TimeGenerated between  (ago(14d)..ago(1h))\r\n| summarize by SourceIp=SourceIp, Dest) on SourceIp, Dest\r\n| summarize Attempts=count(), FirstSeen=min(TimeGenerated), LastSeen=max(TimeGenerated) by SourceIp, Dest\r\n| where Attempts \u003e= 5\r\n| project FirstSeen, LastSeen, SourceIp, Dest, Attempts\r\n| extend Message=strcat(SourceIp,' has sent ',Attempts,' to ',Dest,' which was not seen in the past 14 days')",
+                                             "queryFrequency":  "PT1H",
+                                             "queryPeriod":  "P14D",
+                                             "triggerOperator":  "GreaterThan",
+                                             "triggerThreshold":  0,
+                                             "suppressionDuration":  "PT5H",
+                                             "suppressionEnabled":  false,
+                                             "startTimeUtc":  null,
+                                             "tactics":  [
+                                                             "Discovery",
+                                                             "CommandAndControl"
+                                                         ],
+                                             "techniques":  [
+                                                                "T1046",
+                                                                "T1071"
+                                                            ],
+                                             "subTechniques":  [
+
+                                                               ],
+                                             "alertRuleTemplateName":  null,
+                                             "incidentConfiguration":  {
+                                                                           "createIncident":  false,
+                                                                           "groupingConfiguration":  {
+                                                                                                         "enabled":  true,
+                                                                                                         "reopenClosedIncident":  false,
+                                                                                                         "lookbackDuration":  "PT5H",
+                                                                                                         "matchingMethod":  "Selected",
+                                                                                                         "groupByEntities":  [
+                                                                                                                                 "IP"
+                                                                                                                             ],
+                                                                                                         "groupByAlertDetails":  [
+
+                                                                                                                                 ],
+                                                                                                         "groupByCustomDetails":  [
+
+                                                                                                                                  ]
+                                                                                                     }
+                                                                       },
+                                             "eventGroupingSettings":  {
+                                                                           "aggregationKind":  "AlertPerResult"
+                                                                       },
+                                             "alertDetailsOverride":  {
+                                                                          "alertDescriptionFormat":  "{{Message}}",
+                                                                          "alertDynamicProperties":  [
+
+                                                                                                     ]
+                                                                      },
+                                             "customDetails":  null,
+                                             "entityMappings":  [
+                                                                    {
+                                                                        "entityType":  "IP",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "Address",
+                                                                                                  "columnName":  "SourceIp"
+                                                                                              }
+                                                                                          ]
+                                                                    }
+                                                                ],
+                                             "sentinelEntitiesMappings":  null,
+                                             "templateVersion":  null
+                                         }
+                      }
+                  ]
+}
