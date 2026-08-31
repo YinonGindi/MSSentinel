@@ -1,0 +1,85 @@
+{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "parameters":  {
+                       "analytic-id":  {
+                                           "defaultValue":  "d8e92cb9-4ca8-4157-ae89-6fc259bad3ba",
+                                           "minLength":  1,
+                                           "type":  "string",
+                                           "metadata":  {
+                                                            "description":  "Unique id for the scheduled alert rule"
+                                                        }
+                                       },
+                       "workspace":  {
+                                         "type":  "String"
+                                     }
+                   },
+    "resources":  [
+                      {
+                          "name":  "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d8e92cb9-4ca8-4157-ae89-6fc259bad3ba')]",
+                          "type":  "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+                          "kind":  "Scheduled",
+                          "apiVersion":  "2023-12-01-preview",
+                          "properties":  {
+                                             "displayName":  "Azure GW - Web Scanning",
+                                             "description":  "Detects a client IP rapidly requesting a large number of unique URLs and generating numerous error responses, indicative of web application reconnaissance or scanning on Azure Application Gateway/ FrontDoors",
+                                             "severity":  "Low",
+                                             "enabled":  true,
+                                             "query":  "AzureDiagnostics\r\n| where ingestion_time() \u003e ago(5m)\r\n| where ResourceProvider in~ (\"MICROSOFT.NETWORK\",'MICROSOFT.CDN')\r\n| where Category   has_any (\"ApplicationGatewayAccessLog\", \"ApplicationGatewayFirewallLog\",'AZFWNetworkRule','FrontDoorAccessLog')\r\n| extend clientIp_s=column_ifexists('clientIp_s',''),clientIP_s=column_ifexists('clientIP_s','')\r\n| extend requestUri_s=column_ifexists('requestUri_s','')\r\n| extend httpStatusCode_d=column_ifexists('httpStatusCode_d',''),httpStatus_d=column_ifexists('httpStatus_d','')\r\n| extend ClientIP = coalesce(clientIP_s, clientIp_s, CallerIPAddress)\r\n| extend Url = coalesce(requestUri_s, tostring(requestUri_s)),\r\n   Status = toint(coalesce(httpStatus_d, httpStatusCode_d))\r\n| where isnotempty(ClientIP) and isnotempty(Url)\r\n| summarize\r\n    UniqueUrls=dcount(Url),\r\n    TotalRequests=count(),\r\n    ErrorRequests=countif(Status in (403, 404)),\r\n    FirstSeen=min(TimeGenerated),\r\n    LastSeen=max(TimeGenerated)\r\n    by ClientIP, bin(TimeGenerated, 1m)\r\n| where UniqueUrls \u003e= 1500 and ErrorRequests \u003e 1000\r\n| project FirstSeen, LastSeen, ClientIP, UniqueUrls, TotalRequests, ErrorRequests",
+                                             "queryFrequency":  "PT5M",
+                                             "queryPeriod":  "PT8M",
+                                             "triggerOperator":  "GreaterThan",
+                                             "triggerThreshold":  0,
+                                             "suppressionDuration":  "PT5H",
+                                             "suppressionEnabled":  false,
+                                             "startTimeUtc":  null,
+                                             "tactics":  [
+                                                             "Reconnaissance"
+                                                         ],
+                                             "techniques":  [
+                                                                "T1595"
+                                                            ],
+                                             "subTechniques":  [
+
+                                                               ],
+                                             "alertRuleTemplateName":  null,
+                                             "incidentConfiguration":  {
+                                                                           "createIncident":  true,
+                                                                           "groupingConfiguration":  {
+                                                                                                         "enabled":  false,
+                                                                                                         "reopenClosedIncident":  false,
+                                                                                                         "lookbackDuration":  "PT5H",
+                                                                                                         "matchingMethod":  "AllEntities",
+                                                                                                         "groupByEntities":  [
+
+                                                                                                                             ],
+                                                                                                         "groupByAlertDetails":  [
+
+                                                                                                                                 ],
+                                                                                                         "groupByCustomDetails":  [
+
+                                                                                                                                  ]
+                                                                                                     }
+                                                                       },
+                                             "eventGroupingSettings":  {
+                                                                           "aggregationKind":  "SingleAlert"
+                                                                       },
+                                             "alertDetailsOverride":  null,
+                                             "customDetails":  null,
+                                             "entityMappings":  [
+                                                                    {
+                                                                        "entityType":  "IP",
+                                                                        "fieldMappings":  [
+                                                                                              {
+                                                                                                  "identifier":  "Address",
+                                                                                                  "columnName":  "ClientIP"
+                                                                                              }
+                                                                                          ]
+                                                                    }
+                                                                ],
+                                             "sentinelEntitiesMappings":  null,
+                                             "templateVersion":  null
+                                         }
+                      }
+                  ]
+}
